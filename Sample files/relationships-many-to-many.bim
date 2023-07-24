@@ -1,0 +1,332 @@
+{
+  "name": "relationships-many-to-many",
+  "compatibilityLevel": 1567,
+  "model": {
+    "culture": "it-IT",
+    "dataAccessOptions": {
+      "legacyRedirects": true,
+      "returnErrorValuesAsNull": true
+    },
+    "defaultPowerBIDataSourceVersion": "powerBI_V3",
+    "sourceQueryCulture": "it-IT",
+    "tables": [
+      {
+        "name": "AccountsCustomers",
+        "lineageTag": "8eb8e385-44d1-4441-9ba4-84d162efbe4d",
+        "columns": [
+          {
+            "name": "AccountKey",
+            "dataType": "int64",
+            "sourceColumn": "AccountKey",
+            "formatString": "0",
+            "lineageTag": "fd8e381b-f004-40bc-96b6-b07b8233febe",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey",
+            "formatString": "0",
+            "lineageTag": "c1dc2054-7070-4465-a77d-a6a9f10c753c",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Bridge-91cd6136-0ea9-4a92-bd57-7e9535caf4ff",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(\"i45WMlTSAeJYnWglIyDLCMwyBrKMwSwTIMsEzDKFqzOFy5rBxcwgemMB\", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type text) meta [Serialized.Text = true]) in type table [AccountKey = _t, CustomerKey = _t]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(Source,{{\"AccountKey\", Int64.Type}, {\"CustomerKey\", Int64.Type}})",
+                "in",
+                "    #\"Changed Type\""
+              ]
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ]
+      },
+      {
+        "name": "Accounts",
+        "lineageTag": "8513c749-e36b-4f89-a272-f95119647f1a",
+        "columns": [
+          {
+            "name": "AccountKey",
+            "dataType": "int64",
+            "sourceColumn": "AccountKey",
+            "formatString": "0",
+            "lineageTag": "45665ffc-71bc-4e55-b2db-55871b9de8ad",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "Account",
+            "dataType": "string",
+            "sourceColumn": "Account",
+            "lineageTag": "788359f8-c99b-46ef-8bf4-07c8a1f1ff7c",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "AC-49f61ab3-8427-4774-a326-8ab95917feec",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(\"i45WMlTSUfJNLMpWitWJVjICcgISS3PAHGMgJyg/KbWoBMw1AXJ9SrNTwRxTqC5dJAVmMDGICbEA\", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type text) meta [Serialized.Text = true]) in type table [AccountKey = _t, Account = _t]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(Source,{{\"AccountKey\", Int64.Type}, {\"Account\", type text}})",
+                "in",
+                "    #\"Changed Type\""
+              ]
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ]
+      },
+      {
+        "name": "Customers",
+        "lineageTag": "2b9a2c8a-0184-4a84-b215-295a521cf281",
+        "columns": [
+          {
+            "name": "CustomerKey",
+            "dataType": "int64",
+            "sourceColumn": "CustomerKey",
+            "formatString": "0",
+            "lineageTag": "23363691-8101-499f-988a-ada8b3eaa7a3",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "CustomerName",
+            "dataType": "string",
+            "sourceColumn": "CustomerName",
+            "lineageTag": "7ae9b611-a5fd-4125-85b8-b70d004ac80b",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "CU-f36c14e9-4032-4d78-9027-2080931b9967",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(\"i45WMlTSUfJNLMpWitWJVjICcgISS3PAHGMgJyg/KbWoBMw1AXJ9SrNTlWJjAQ==\", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type text) meta [Serialized.Text = true]) in type table [CustomerKey = _t, CustomerName = _t]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(Source,{{\"CustomerKey\", Int64.Type}, {\"CustomerName\", type text}})",
+                "in",
+                "    #\"Changed Type\""
+              ]
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ]
+      },
+      {
+        "name": "Transactions",
+        "lineageTag": "dcede26f-a519-4d96-a101-2fd2a43395c6",
+        "columns": [
+          {
+            "name": "AccountKey",
+            "dataType": "int64",
+            "sourceColumn": "AccountKey",
+            "formatString": "0",
+            "lineageTag": "3e6b22c1-382d-4716-855c-3ae92814e9ae",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "Amount",
+            "dataType": "decimal",
+            "sourceColumn": "Amount",
+            "formatString": "#,0.00",
+            "lineageTag": "79695975-fe88-4599-b176-8db96f2df23f",
+            "summarizeBy": "sum",
+            "changedProperties": [
+              {
+                "property": "DataType"
+              }
+            ],
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "TR-814ed1f3-c912-4d26-baaf-17b1cdeb2286",
+            "mode": "import",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(\"Tc3LCQAgEEPBXnJW2K9gLcv234Z6kRwHwksVFAMqIuhRMIYzFiMYyXi1aTT7eLXp9POx95VFXvUB\", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type text) meta [Serialized.Text = true]) in type table [AccountKey = _t, Amount = _t]),",
+                "    #\"Changed Type\" = Table.TransformColumnTypes(Source,{{\"AccountKey\", Int64.Type}, {\"Amount\", Int64.Type}})",
+                "in",
+                "    #\"Changed Type\""
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "SumOfAmount CrossFilter",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    SUM ( Transactions[Amount] ), ",
+              "    CROSSFILTER ( AccountsCustomers[AccountKey], Accounts[AccountKey], BOTH )",
+              ")"
+            ],
+            "formatString": "#,0.00",
+            "lineageTag": "c417f2ff-b742-49be-adee-bc88e11e1bdb"
+          },
+          {
+            "name": "SumOfAmount Table Expansion",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    SUM ( Transactions[Amount] ), ",
+              "    AccountsCustomers",
+              ")"
+            ],
+            "formatString": "#,0.00",
+            "lineageTag": "8abf3233-33ae-458f-b99c-513de81b2e6b"
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_ResultType",
+            "value": "Table"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "b3a2685b-cce3-43b4-a603-367fb2150ebf",
+        "fromTable": "AccountsCustomers",
+        "fromColumn": "AccountKey",
+        "toTable": "Accounts",
+        "toColumn": "AccountKey",
+        "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "a2ce1b3f-21f1-4e3f-a9c5-ee4a3878dd95",
+        "fromTable": "AccountsCustomers",
+        "fromColumn": "CustomerKey",
+        "toTable": "Customers",
+        "toColumn": "CustomerKey"
+      },
+      {
+        "name": "baec9e2a-b826-4527-81c7-dcf42ab74d1e",
+        "fromTable": "Transactions",
+        "fromColumn": "AccountKey",
+        "toTable": "Accounts",
+        "toColumn": "AccountKey"
+      },
+      {
+        "name": "37bfb9f0-5a22-42d1-a941-b91fd621cd50",
+        "toCardinality": "many",
+        "fromTable": "Transactions",
+        "fromColumn": "AccountKey",
+        "toTable": "AccountsCustomers",
+        "toColumn": "AccountKey",
+        "isActive": false
+      }
+    ],
+    "cultures": [
+      {
+        "name": "it-IT",
+        "linguisticMetadata": {
+          "content": {
+            "Version": "1.0.0",
+            "Language": "en-US",
+            "DynamicImprovement": "HighConfidence"
+          },
+          "contentType": "json"
+        }
+      }
+    ],
+    "annotations": [
+      {
+        "name": "__PBI_TimeIntelligenceEnabled",
+        "value": "0"
+      },
+      {
+        "name": "PBIDesktopVersion",
+        "value": "2.119.666.0 (23.07)"
+      },
+      {
+        "name": "PBI_QueryOrder",
+        "value": "[\"AccountsCustomers\",\"Accounts\",\"Customers\",\"Transactions\"]"
+      },
+      {
+        "name": "TabularEditor_SerializeOptions",
+        "value": "{\"IgnoreInferredObjects\":true,\"IgnoreInferredProperties\":true,\"IgnoreTimestamps\":true,\"SplitMultilineStrings\":true,\"PrefixFilenames\":false,\"LocalTranslations\":false,\"LocalPerspectives\":false,\"LocalRelationships\":false,\"Levels\":[\"Data Sources\",\"Perspectives\",\"Relationships\",\"Roles\",\"Tables\",\"Tables/Columns\",\"Tables/Hierarchies\",\"Tables/Measures\",\"Tables/Partitions\",\"Translations\"]}"
+      }
+    ]
+  }
+}

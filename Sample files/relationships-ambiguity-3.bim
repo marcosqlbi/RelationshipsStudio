@@ -1,0 +1,247 @@
+{
+  "name": "relationships-ambiguity-3",
+  "compatibilityLevel": 1550,
+  "model": {
+    "culture": "en-US",
+    "tables": [
+      {
+        "name": "A",
+        "lineageTag": "c4134646-c948-4d18-9764-257917f4fcb7",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "b159049a-1368-4d32-9165-b95fb24846bb",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "A",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"A\",\"B\",\"C\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "b759226706ce4fcaa186f68709edc0fd"
+          }
+        ]
+      },
+      {
+        "name": "B1",
+        "lineageTag": "0bfaf016-cdd8-46a6-a315-727717c2bf64",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "9dfc88e2-de8c-4382-9715-dd03b2db4da3",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "B1",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"B\",\"C\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "T1",
+            "expression": "COUNTROWS ( B1 )",
+            "formatString": "0",
+            "lineageTag": "663df663-b938-489e-af7a-30bf6928fe9a"
+          },
+          {
+            "name": "T1A",
+            "expression": "CALCULATE ( [T1], CROSSFILTER( B1[Name], A[Name], None ) )",
+            "formatString": "0",
+            "lineageTag": "1fce8f99-2848-4cfe-b4c1-1c71b08aa12c"
+          },
+          {
+            "name": "T1B",
+            "expression": "CALCULATE ( [T1], USERELATIONSHIP( B1[Name], A[Name] ) )",
+            "formatString": "0",
+            "lineageTag": "7e090d40-9587-43e5-b454-42eb03ba8c60"
+          },
+          {
+            "name": "T1C",
+            "expression": "CALCULATE ( [T1], USERELATIONSHIP( B1[Name], A[Name] ), CROSSFILTER( B1[Name], A[Name], None ) )",
+            "lineageTag": "65a5cd5a-4b7d-44b3-9b44-64a501bb1d37"
+          },
+          {
+            "name": "T1AA",
+            "expression": "CALCULATE ( [T1A], CROSSFILTER( A[Name], B1[Name], None ) )",
+            "formatString": "0",
+            "lineageTag": "b698548d-fa6f-431d-ae1e-241a5db221e1"
+          },
+          {
+            "name": "T1AB",
+            "expression": "CALCULATE ( [T1A], USERELATIONSHIP( A[Name], B1[Name] ) )",
+            "formatString": "0",
+            "lineageTag": "44a95a4d-4cc0-482f-9281-2d60ae0853bf"
+          },
+          {
+            "name": "T1BA",
+            "expression": "CALCULATE ( [T1B], CROSSFILTER( A[Name], B1[Name], None ) )",
+            "formatString": "0",
+            "lineageTag": "ce2b80e2-9e32-4591-8fca-d52df20c66cf"
+          },
+          {
+            "name": "T1BB",
+            "expression": "CALCULATE ( [T1B], USERELATIONSHIP( A[Name], B1[Name] ) )",
+            "formatString": "0",
+            "lineageTag": "6412ff18-5804-40a1-8604-1e04cd5a61f8"
+          },
+          {
+            "name": "T1D",
+            "expression": "CALCULATE ( [T1], USERELATIONSHIP( B2[Name], B1[Name] ) )",
+            "formatString": "0",
+            "lineageTag": "9be23c99-0d7f-47ad-b4a3-b926c063b1f4"
+          },
+          {
+            "name": "T1E",
+            "expression": "CALCULATE ( [T1], CROSSFILTER( B2[Name], B1[Name], None ) )",
+            "formatString": "0",
+            "lineageTag": "13b58b9e-6a37-409b-876e-8c916a939af0"
+          },
+          {
+            "name": "T1DA",
+            "expression": "CALCULATE ( [T1D], CROSSFILTER( B1[Name], B2[Name], None ) )",
+            "formatString": "0",
+            "lineageTag": "d31486b1-9915-428b-bd11-785d4194f0d9"
+          },
+          {
+            "name": "T1EB",
+            "expression": "CALCULATE ( [T1E], CROSSFILTER( B1[Name], B2[Name], None ) )",
+            "formatString": "0",
+            "lineageTag": "e1618334-0d7d-4dc2-9c0f-55254c0ff26c"
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "ca087dd5f1484f9db43a70856a879186"
+          }
+        ]
+      },
+      {
+        "name": "B2",
+        "lineageTag": "9c22f786-d95d-4686-b859-f3c501dd9d23",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "d990a15e-7965-40ae-ac97-bf52e6babf65",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "B2",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"A\",\"C\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "6d5c3f9d87dd4f03879211c6f86a83ca"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "4b4fa474-5987-4de4-bcf6-1e1bcf2e21bd",
+        "fromTable": "B2",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name"
+      },
+      {
+        "name": "529f390f-4e73-4518-9824-34b1d981c44f",
+        "fromTable": "B1",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name"
+      },
+      {
+        "name": "66d61b6a-58eb-4561-884b-6a983c2b17ad",
+        "fromTable": "B1",
+        "fromColumn": "Name",
+        "toTable": "B2",
+        "toColumn": "Name",
+        "isActive": false
+      }
+    ],
+    "cultures": [
+      {
+        "name": "en-US",
+        "linguisticMetadata": {
+          "content": {
+            "Version": "1.0.0",
+            "Language": "en-US",
+            "DynamicImprovement": "HighConfidence"
+          },
+          "contentType": "json"
+        }
+      }
+    ],
+    "annotations": [
+      {
+        "name": "__PBI_TimeIntelligenceEnabled",
+        "value": "0"
+      },
+      {
+        "name": "PBIDesktopVersion",
+        "value": "2.119.666.0 (23.07)"
+      },
+      {
+        "name": "TabularEditor_SerializeOptions",
+        "value": "{\"IgnoreInferredObjects\":true,\"IgnoreInferredProperties\":true,\"IgnoreTimestamps\":true,\"SplitMultilineStrings\":true,\"PrefixFilenames\":false,\"LocalTranslations\":false,\"LocalPerspectives\":false,\"LocalRelationships\":false,\"Levels\":[\"Data Sources\",\"Perspectives\",\"Relationships\",\"Roles\",\"Tables\",\"Tables/Columns\",\"Tables/Hierarchies\",\"Tables/Measures\",\"Tables/Partitions\",\"Translations\"]}"
+      }
+    ]
+  }
+}

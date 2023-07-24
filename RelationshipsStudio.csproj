@@ -13,4 +13,8 @@
     <PackageReference Include="Serilog.Sinks.RichTextBox.WinForms.Colored" Version="1.1.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Sample files\" />
+  </ItemGroup>
+
 </Project>
