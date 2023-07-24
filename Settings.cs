@@ -19,7 +19,7 @@ namespace RelationshipsStudio
             }
             set
             {
-                this[nameof(BimFilename)] = value;
+               this[nameof(BimFilename)] = value;
             }
         }
 

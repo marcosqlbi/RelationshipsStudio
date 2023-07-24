@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Runtime;
 using System.Configuration;
 using Microsoft.VisualBasic;
+using System.ComponentModel;
 
 namespace RelationshipsStudio
 {
@@ -24,8 +25,7 @@ namespace RelationshipsStudio
 
         private void OpenBimFile()
         {
-            string path = textFilename.Text;
-            var json = File.ReadAllText(path);
+            var json = File.ReadAllText(settings.BimFilename);
             TabularDatabase = JsonSerializer.DeserializeDatabase(json);
             PopulateModel();
             DumpRelatioships();
@@ -143,7 +143,7 @@ namespace RelationshipsStudio
                 return;
             }
 
-            var relationshipModifiers = ParseRelationshipModifiers(textRelationships.Text).ToList();
+            var relationshipModifiers = ParseRelationshipModifiers(settings.Relationships).ToList();
 
             foreach (var p2p in StudioModel.Ambiguities)
             {
@@ -181,11 +181,12 @@ namespace RelationshipsStudio
 
         private void BtnBrowse(object sender, EventArgs e)
         {
-            openFile.FileName = textFilename.Text;
+            openFile.FileName = settings.BimFilename;
             if (openFile.ShowDialog() == DialogResult.OK)
             {
-                textFilename.Text = openFile.FileName;
+                settings.BimFilename = openFile.FileName;
                 OpenBimFile();
+                settings.Save();
             }
         }
 
@@ -198,15 +199,15 @@ namespace RelationshipsStudio
                 .WriteTo.RichTextBox(logDisplay, theme: ThemePresets.Light)
             .CreateLogger();
 
-            settings = new MyUserSettings();
-            //textFilename.DataBindings.Add(new Binding(nameof(textFilename.Text), settings, nameof(MyUserSettings.BimFilename)));
-            //textRelationships.DataBindings.Add(new Binding(nameof(textRelationships.Text), settings, nameof(MyUserSettings.Relationships)));
 
-            if (!string.IsNullOrWhiteSpace(textFilename.Text))
+            settings = new MyUserSettings();
+            textRelationships.DataBindings.Add(new Binding(nameof(textRelationships.Text), settings, nameof(MyUserSettings.Relationships)));
+            textFilename.DataBindings.Add(new Binding(nameof(textFilename.Text), settings, nameof(MyUserSettings.BimFilename)));
+
+            if (!string.IsNullOrWhiteSpace(textFilename.Text) && System.IO.Path.Exists(textFilename.Text))
             {
                 OpenBimFile();
             }
-            settings.Save();
         }
 
         private void BtnDump_Click(object sender, EventArgs e)
@@ -239,7 +240,7 @@ namespace RelationshipsStudio
 
         private void BtnRelationships_Click(object sender, EventArgs e)
         {
-            ParseRelationshipModifiers(textRelationships.Text).ToList();
+            ParseRelationshipModifiers(settings.Relationships).ToList();
             settings.Save();
         }
         public IEnumerable<RelationshipModifier> ParseRelationshipModifiers(string text)
