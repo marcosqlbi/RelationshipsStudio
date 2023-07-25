@@ -41,6 +41,7 @@
             logDisplay = new RichTextBox();
             textRelationships = new RichTextBox();
             panel2 = new Panel();
+            btnAddSyntaxExample = new Button();
             label2 = new Label();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -177,12 +178,23 @@
             // 
             // panel2
             // 
+            panel2.Controls.Add(btnAddSyntaxExample);
             panel2.Controls.Add(label2);
             panel2.Dock = DockStyle.Top;
             panel2.Location = new Point(0, 0);
             panel2.Name = "panel2";
             panel2.Size = new Size(576, 47);
             panel2.TabIndex = 1;
+            // 
+            // btnAddSyntaxExample
+            // 
+            btnAddSyntaxExample.Location = new Point(227, 6);
+            btnAddSyntaxExample.Name = "btnAddSyntaxExample";
+            btnAddSyntaxExample.Size = new Size(180, 34);
+            btnAddSyntaxExample.TabIndex = 2;
+            btnAddSyntaxExample.Text = "Syntax example";
+            btnAddSyntaxExample.UseVisualStyleBackColor = true;
+            btnAddSyntaxExample.Click += BtnAddSyntaxExample_Click;
             // 
             // label2
             // 
@@ -232,5 +244,6 @@
         private Label label2;
         private RichTextBox textRelationships;
         private Button BtnRelationships;
+        private Button btnAddSyntaxExample;
     }
 }

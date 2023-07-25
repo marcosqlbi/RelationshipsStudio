@@ -143,40 +143,42 @@ namespace RelationshipsStudio
                 return;
             }
 
-            var relationshipModifiers = ParseRelationshipModifiers(settings.Relationships).ToList();
-
-            foreach (var p2p in StudioModel.Ambiguities)
+            foreach (var (lines, groupName) in GroupRelationshipsModifiers(settings.Relationships))
             {
-                dumpResult += $"{p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name} : {p2p.Count()} relationships\r\n";
+                dumpResult += $"*** RELATIONSHIP GROUP {groupName} ***";
+                // var relationshipModifiers = ParseRelationshipModifiers(settings.Relationships).ToList();
+                var relationshipModifiers = ParseRelationshipModifiers(lines).ToList();
 
-                var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers);
-                var currentPaths =
-                    from path in disambiguatedPath
-                    where path.Current
-                    select path;
-                dumpResult += currentPaths.Count() switch
+                foreach (var p2p in StudioModel.Ambiguities)
                 {
-                    0 => "  NO ACTIVE PATHS\r\n",
-                    1 => "  SELECTED PATH:\r\n",
-                    _ => "  AMBIGUOUS PATHS:\r\n"
-                };
+                    dumpResult += $"{p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name} : {p2p.Count()} relationships\r\n";
 
-                foreach (var path in currentPaths)
-                {
-                    dumpResult += DumpPath(path);
+                    var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers);
+                    var currentPaths =
+                        from path in disambiguatedPath
+                        where path.Current
+                        select path;
+                    dumpResult += currentPaths.Count() switch
+                    {
+                        0 => "  NO ACTIVE PATHS\r\n",
+                        1 => "  SELECTED PATH:\r\n",
+                        _ => "  AMBIGUOUS PATHS:\r\n"
+                    };
+
+                    foreach (var path in currentPaths)
+                    {
+                        dumpResult += DumpPath(path);
+                    }
+                    dumpResult += "  Other paths:\r\n";
+
+                    foreach (var path in disambiguatedPath.Where(p => !p.Current))
+                    {
+                        dumpResult += DumpPath(path);
+                    }
                 }
-                dumpResult += "  Other paths:\r\n";
 
-                foreach (var path in disambiguatedPath.Where(p => !p.Current))
-                {
-                    dumpResult += DumpPath(path);
-                }
-
-                // Test to disambiguate
-                ;
+                Log.Verbose("Dump paths:\r\n" + dumpResult);
             }
-
-            Log.Verbose("Dump paths:\r\n" + dumpResult);
         }
 
         private void BtnBrowse(object sender, EventArgs e)
@@ -190,7 +192,7 @@ namespace RelationshipsStudio
             }
         }
 
-        MyUserSettings settings;
+        MyUserSettings settings = new();
 
         private void Studio_Load(object sender, EventArgs e)
         {
@@ -198,7 +200,6 @@ namespace RelationshipsStudio
                 .MinimumLevel.Verbose()
                 .WriteTo.RichTextBox(logDisplay, theme: ThemePresets.Light)
             .CreateLogger();
-
 
             settings = new MyUserSettings();
             textRelationships.DataBindings.Add(new Binding(nameof(textRelationships.Text), settings, nameof(MyUserSettings.Relationships)));
@@ -240,13 +241,58 @@ namespace RelationshipsStudio
 
         private void BtnRelationships_Click(object sender, EventArgs e)
         {
-            ParseRelationshipModifiers(settings.Relationships).ToList();
+            ParseGroupRelationshipModifiers(settings.Relationships);
             settings.Save();
         }
-        public IEnumerable<RelationshipModifier> ParseRelationshipModifiers(string text)
+
+        static public IEnumerable<(IEnumerable<string> lines, string groupName)> GroupRelationshipsModifiers(string text)
         {
             var lines = text.Replace("\r\n", "\n").Split("\n");
+            string groupName = string.Empty;
 
+            var currentGroup = new List<string>();
+            foreach (var rawline in lines)
+            {
+                string line = rawline.Trim();
+                // Skip comments
+                if (line.StartsWith("//")) continue;
+
+                // Intercept new group
+                if (line.StartsWith("#"))
+                {
+                    groupName = line[1..];
+
+                    if (currentGroup.Count > 0)
+                    {
+                        yield return (currentGroup, groupName);
+                        currentGroup = new List<string>();
+                    }
+                }
+                else
+                {
+                    currentGroup.Add(line);
+                }
+            }
+            if (currentGroup.Count > 0)
+            {
+                yield return (currentGroup, groupName);
+            }
+        }
+
+        public void ParseGroupRelationshipModifiers(string text)
+        {
+            foreach (var (lines, groupName) in GroupRelationshipsModifiers(text))
+            {
+                Log.Verbose($"*** GROUP {groupName} ***");
+                // Skip warning to show debug info
+#pragma warning disable CA1806 // Do not ignore method results
+                ParseRelationshipModifiers(lines).ToList();
+#pragma warning restore CA1806 // Do not ignore method results
+            }
+        }
+
+        public IEnumerable<RelationshipModifier> ParseRelationshipModifiers(IEnumerable<string> lines)
+        {
             foreach (var line in lines)
             {
                 Relationship? relationship;
@@ -258,7 +304,7 @@ namespace RelationshipsStudio
                 var values = trimmedLine.Split(',');
                 if (values.Length < 4)
                 {
-                    Log.Error($"Line ignores becasue it has less than 4 arguments: {line}");
+                    Log.Error($"Line ignores because it has less than 4 arguments: {line}");
                     continue;
                 }
 
@@ -328,6 +374,32 @@ namespace RelationshipsStudio
         private void Studio_FormClosing(object sender, FormClosingEventArgs e)
         {
             settings.Save();
+        }
+
+        private void BtnAddSyntaxExample_Click(object sender, EventArgs e)
+        {
+            settings.Relationships += @"
+// The syntax is:
+// <level>,<USERELATIONSHIP|CROSSFILTER>,<columnReferenceLeft>,<columnReferenceRight>[,NONE|ONEWAY|BOTH|ONEWAY_RIGHTFILTERSLEFT|ONEWAY_LEFTFILTERSRIGHT]
+// Use # at mark the start of a group - the following part of the line becomes the new group name
+//
+// Examples:
+
+// Apply USERELATIONSHIP in the outer CALCULATE, Apply CROSSFILTER in the inner CALCULATE
+# Demo 1
+1,USERELATIONSHIP,B2[Name],B1[Name]
+2,CROSSFILTER,B2[Name],B1[Name],NONE
+
+// Apply two USERELATIONSHIP in the same CALCULATE
+# Demo 2
+1,USERELATIONSHIP,C[Name],A[Name]
+1,USERELATIONSHIP,C[Name],B1[Name]
+
+// Apply USERELATIONSHIP for C-A in the outer CALCULATE, apply USERELATIONSHIP for C-B1 in the inner CALCULATE
+# Demo 3
+1,USERELATIONSHIP,C[Name],A[Name]
+2,USERELATIONSHIP,C[Name],B1[Name]
+";
         }
     }
 }
