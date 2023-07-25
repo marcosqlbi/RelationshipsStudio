@@ -1,0 +1,343 @@
+{
+  "name": "relationships-ambiguity-2",
+  "compatibilityLevel": 1550,
+  "model": {
+    "culture": "en-US",
+    "tables": [
+      {
+        "name": "A",
+        "lineageTag": "c4134646-c948-4d18-9764-257917f4fcb7",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "b159049a-1368-4d32-9165-b95fb24846bb",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "A",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"A\",\"B\",\"C\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "b759226706ce4fcaa186f68709edc0fd"
+          }
+        ]
+      },
+      {
+        "name": "B1",
+        "lineageTag": "0bfaf016-cdd8-46a6-a315-727717c2bf64",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "9dfc88e2-de8c-4382-9715-dd03b2db4da3",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "B1",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"B\",\"C\",\"D\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "ca087dd5f1484f9db43a70856a879186"
+          }
+        ]
+      },
+      {
+        "name": "B2",
+        "lineageTag": "9c22f786-d95d-4686-b859-f3c501dd9d23",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "d990a15e-7965-40ae-ac97-bf52e6babf65",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "B2",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"A\",\"C\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "6d5c3f9d87dd4f03879211c6f86a83ca"
+          }
+        ]
+      },
+      {
+        "name": "C",
+        "lineageTag": "b332776d-b047-410b-b5b7-67387837cdd9",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "a8913bcc-d6df-4af8-9671-4c6d7cd81baa",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "C",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"A\",\"B\",\"C\",\"D\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "Test",
+            "expression": "COUNTROWS ( C )",
+            "formatString": "0",
+            "lineageTag": "4816e846-4ba7-4f29-a878-7f7959c78f2b"
+          },
+          {
+            "name": "Test B1",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    [Test],",
+              "    USERELATIONSHIP ( C[Name], B1[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "4d240669-6062-48a8-a7bd-54a4a75fb545"
+          },
+          {
+            "name": "Test B2",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    [Test],",
+              "    USERELATIONSHIP ( C[Name], B2[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "4987f2d0-fcab-44ce-9555-2197c8194224"
+          },
+          {
+            "name": "Test B1-B2",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    [Test],",
+              "    USERELATIONSHIP ( C[Name], B1[Name] ),",
+              "    USERELATIONSHIP ( C[Name], B2[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "a28ff1d8-c39e-4c8f-8850-d05b5adfa6c8"
+          },
+          {
+            "name": "Test A",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    [Test],",
+              "    USERELATIONSHIP ( C[Name], A[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "8ba6b33c-f464-4143-9f4b-75c16273058b"
+          },
+          {
+            "name": "Test A-B1",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    [Test],",
+              "    USERELATIONSHIP ( C[Name], A[Name] ),",
+              "    USERELATIONSHIP ( C[Name], B1[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "a5e3cc79-afa1-4562-bf67-b007fb6fc698"
+          },
+          {
+            "name": "Test A-B2",
+            "expression": [
+              "",
+              "CALCULATE ( ",
+              "    [Test],",
+              "    USERELATIONSHIP ( C[Name], B2[Name] ),",
+              "    USERELATIONSHIP ( C[Name], A[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "6a594eee-35dd-422a-9091-0f9a8af08034"
+          },
+          {
+            "name": "Test B1/A",
+            "expression": [
+              "",
+              "CALCULATE (",
+              "    CALCULATE ( ",
+              "        [Test],",
+              "        USERELATIONSHIP ( C[Name], A[Name] )",
+              "    ),",
+              "    USERELATIONSHIP ( C[Name], B1[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "d1b91b24-6d95-4114-af1d-ba1719558f7f"
+          },
+          {
+            "name": "Test A/B1",
+            "expression": [
+              "",
+              "CALCULATE (",
+              "    CALCULATE ( ",
+              "        [Test],",
+              "        USERELATIONSHIP ( C[Name], B1[Name] )",
+              "    ),",
+              "    USERELATIONSHIP ( C[Name], A[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "12a3972f-bc96-4d82-bbde-16e681e1c707"
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "168c4c9df9fc4e2ca2169aed5053eb07"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "4b4fa474-5987-4de4-bcf6-1e1bcf2e21bd",
+        "fromTable": "B2",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name"
+      },
+      {
+        "name": "5a2955b8-e3bf-406a-a8c1-8e1add2acd55",
+        "toCardinality": "many",
+        "fromTable": "C",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name",
+        "isActive": false
+      },
+      {
+        "name": "529f390f-4e73-4518-9824-34b1d981c44f",
+        "fromTable": "B1",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name"
+      },
+      {
+        "name": "17ed2693-0f4b-45ec-add7-3064e829bbac",
+        "fromTable": "C",
+        "fromColumn": "Name",
+        "toTable": "B1",
+        "toColumn": "Name",
+        "isActive": false
+      },
+      {
+        "name": "f9a31a3b-4ee9-4251-bbca-19e1c3ffdb9e",
+        "toCardinality": "many",
+        "fromTable": "C",
+        "fromColumn": "Name",
+        "toTable": "B2",
+        "toColumn": "Name",
+        "isActive": false
+      }
+    ],
+    "cultures": [
+      {
+        "name": "en-US",
+        "linguisticMetadata": {
+          "content": {
+            "Version": "1.0.0",
+            "Language": "en-US",
+            "DynamicImprovement": "HighConfidence"
+          },
+          "contentType": "json"
+        }
+      }
+    ],
+    "annotations": [
+      {
+        "name": "__PBI_TimeIntelligenceEnabled",
+        "value": "0"
+      },
+      {
+        "name": "PBIDesktopVersion",
+        "value": "2.119.870.0 (23.07)"
+      },
+      {
+        "name": "TabularEditor_SerializeOptions",
+        "value": "{\"IgnoreInferredObjects\":true,\"IgnoreInferredProperties\":true,\"IgnoreTimestamps\":true,\"SplitMultilineStrings\":true,\"PrefixFilenames\":false,\"LocalTranslations\":false,\"LocalPerspectives\":false,\"LocalRelationships\":false,\"Levels\":[\"Data Sources\",\"Perspectives\",\"Relationships\",\"Roles\",\"Tables\",\"Tables/Columns\",\"Tables/Hierarchies\",\"Tables/Measures\",\"Tables/Partitions\",\"Translations\"]}"
+      }
+    ]
+  }
+}

@@ -114,7 +114,7 @@ namespace RelationshipsStudio
                 dumpResult += $" --> {destTable.Name}[{destColumn}]";
                 sourceTable = destTable;
             }
-            dumpResult += $" {(p.Active ? "{bold}{blue}ACTIVE{reset}" : "{red}inactive{reset}")} P:{p.Priority} W:{p.Weight}{(p.Current ? $" {{!{(ambiguous?"yellow":"palegreen")}}}{{{(ambiguous ? "red" : "fg")}}}{{bold}}CURRENT{{reset}}" : "")}\r\n";
+            dumpResult += $" {(p.Active ? "{bold}{blue}ACTIVE{reset}" : "{red}inactive{reset}")} P:{p.Priority} W:{p.Weight} D:{p.Depth}{(p.Current ? $" {{!{(ambiguous?"yellow":"palegreen")}}}{{{(ambiguous ? "red" : "fg")}}}{{bold}}CURRENT{{reset}}" : "")}\r\n";
             return dumpResult;
         }
 

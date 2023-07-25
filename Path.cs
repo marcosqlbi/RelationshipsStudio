@@ -54,6 +54,8 @@ namespace RelationshipsStudio
 
         public PriorityType Priority { get; set; }
         public int Weight { get; set; }
+        // Depth corresponds the number of relationships in the complete path
+        public int Depth { get => Relationships.Count(); }
         /// <summary>
         /// The path is active when all the relationships are active
         /// </summary>
@@ -138,9 +140,6 @@ namespace RelationshipsStudio
                 where r.IncludedPaths == totalPaths
                 select r.Relationship;
 
-            // TODO - evaluate how to apply relationshipModifiers in the following evaluation
-            //        if we change the relationships objects we modify the identity of the relationship
-            //        if we lookup the changes all the time, it could be slower
             var inspectPaths =
                 from p in copyPaths
                 select new
@@ -155,7 +154,7 @@ namespace RelationshipsStudio
             // Apply Priority & Weight
             foreach (var p in inspectPaths)
             {
-                // TODO receive a list of USERELATIONSHIP / CROSSFILTER changes
+                // Receive a list of USERELATIONSHIP / CROSSFILTER changes
                 // it affects both active and relationships weight
                 var pathRelationships = p.Path.Relationships.ApplyModifiers(useRelationships);
 
@@ -170,13 +169,17 @@ namespace RelationshipsStudio
 
             }
 
-            // TODO: compute the active path between the two tables
-            //       and report an error in case of unresolved ambiguity
+            // Sort by prioritization - in each group there are paths with the same priority
+            // 2023-07-25: added disambiguation by longer depth of relationships - not documented,
+            //             but it corresponds to the current implementation, verified for Type 1 and Type 2
             var prioritization =
                 from p in inspectPaths
                 where p.Path.Active == true
-                group p by (p.Path.Priority, p.Path.Weight) into priorityBucket
-                orderby priorityBucket.Key.Priority ascending, priorityBucket.Key.Weight descending
+                group p by (p.Path.Priority, p.Path.Weight, Depth: p.Path.Relationships.Count()) into priorityBucket
+                orderby priorityBucket.Key.Priority ascending, priorityBucket.Key.Weight descending, priorityBucket.Key.Depth descending
+                // Commented version that corresponds to documented behavior (ambigous path with different length should raise an error)
+                // group p by (p.Path.Priority, p.Path.Weight) into priorityBucket
+                // orderby priorityBucket.Key.Priority ascending, priorityBucket.Key.Weight descending
                 select priorityBucket;
 
             var priorityPaths = prioritization.FirstOrDefault();
