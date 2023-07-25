@@ -38,17 +38,23 @@
             btnLoadFilename = new Button();
             openFile = new OpenFileDialog();
             splitContainer1 = new SplitContainer();
-            logDisplay = new RichTextBox();
             textRelationships = new RichTextBox();
             panel2 = new Panel();
             btnAddSyntaxExample = new Button();
             label2 = new Label();
+            splitContainer2 = new SplitContainer();
+            logDisplay = new RichTextBox();
+            textResult = new RichTextBox();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
             panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+            splitContainer2.Panel1.SuspendLayout();
+            splitContainer2.Panel2.SuspendLayout();
+            splitContainer2.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
@@ -145,7 +151,7 @@
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(logDisplay);
+            splitContainer1.Panel1.Controls.Add(splitContainer2);
             // 
             // splitContainer1.Panel2
             // 
@@ -154,16 +160,6 @@
             splitContainer1.Size = new Size(1551, 753);
             splitContainer1.SplitterDistance = 971;
             splitContainer1.TabIndex = 3;
-            // 
-            // logDisplay
-            // 
-            logDisplay.Dock = DockStyle.Fill;
-            logDisplay.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            logDisplay.Location = new Point(0, 0);
-            logDisplay.Name = "logDisplay";
-            logDisplay.Size = new Size(971, 753);
-            logDisplay.TabIndex = 3;
-            logDisplay.Text = "";
             // 
             // textRelationships
             // 
@@ -206,6 +202,44 @@
             label2.Text = "Relationships Settings";
             label2.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // splitContainer2
+            // 
+            splitContainer2.Dock = DockStyle.Fill;
+            splitContainer2.Location = new Point(0, 0);
+            splitContainer2.Name = "splitContainer2";
+            splitContainer2.Orientation = Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(textResult);
+            // 
+            // splitContainer2.Panel2
+            // 
+            splitContainer2.Panel2.Controls.Add(logDisplay);
+            splitContainer2.Size = new Size(971, 753);
+            splitContainer2.SplitterDistance = 364;
+            splitContainer2.TabIndex = 4;
+            // 
+            // logDisplay
+            // 
+            logDisplay.Dock = DockStyle.Fill;
+            logDisplay.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            logDisplay.Location = new Point(0, 0);
+            logDisplay.Name = "logDisplay";
+            logDisplay.Size = new Size(971, 385);
+            logDisplay.TabIndex = 4;
+            logDisplay.Text = "";
+            // 
+            // textResult
+            // 
+            textResult.Dock = DockStyle.Fill;
+            textResult.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            textResult.Location = new Point(0, 0);
+            textResult.Name = "textResult";
+            textResult.Size = new Size(971, 364);
+            textResult.TabIndex = 0;
+            textResult.Text = "";
+            // 
             // Studio
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -225,6 +259,10 @@
             splitContainer1.ResumeLayout(false);
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
+            splitContainer2.Panel1.ResumeLayout(false);
+            splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
+            splitContainer2.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -239,11 +277,13 @@
         private Button buttonPaths;
         private Button BtnGroups;
         private SplitContainer splitContainer1;
-        private RichTextBox logDisplay;
         private Panel panel2;
         private Label label2;
         private RichTextBox textRelationships;
         private Button BtnRelationships;
         private Button btnAddSyntaxExample;
+        private SplitContainer splitContainer2;
+        private RichTextBox logDisplay;
+        private RichTextBox textResult;
     }
 }

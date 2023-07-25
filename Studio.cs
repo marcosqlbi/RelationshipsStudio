@@ -6,10 +6,6 @@ using System.Diagnostics;
 using System.Security.Policy;
 using System.Data.Common;
 using System.Text.RegularExpressions;
-using System.Runtime;
-using System.Configuration;
-using Microsoft.VisualBasic;
-using System.ComponentModel;
 
 namespace RelationshipsStudio
 {
@@ -62,8 +58,14 @@ namespace RelationshipsStudio
             }
         }
 
+        private void WriteResult( string content )
+        {
+            //content.Split("")
+        }
         private void DumpRelatioships()
         {
+            Log.Information("Dump relationships");
+
             string dumpResult = string.Empty;
             if (StudioModel == null)
             {
@@ -71,41 +73,40 @@ namespace RelationshipsStudio
                 return;
             }
 
-            dumpResult += "TABLES\r\n";
+            dumpResult += "{bold}TABLES{!bold}\r\n";
             foreach (var t in StudioModel.Tables)
             {
                 dumpResult += $"  {t.Name}\r\n";
             }
-            dumpResult += "RELATIONSHIPS\r\n";
+            dumpResult += "{bold}RELATIONSHIPS{!bold}\r\n";
             foreach (var r in StudioModel.Relationships)
             {
                 string relationshipDirection = (r.CrossFilter == Relationship.CrossFilterDirection.None)
                     ? "---"
                     : $"{(r.CrossFilter == Relationship.CrossFilterDirection.OneWay ? "-" : "<")}-{(r.CrossFilter == Relationship.CrossFilterDirection.OneWay_Inverted ? "-" : ">")}";
-                dumpResult += $"  (From:{r.From.Name} ({(r.FromCardinality == Relationship.Cardinality.Many ? '*' : '1')}){relationshipDirection}({(r.ToCardinality == Relationship.Cardinality.Many ? '*' : '1')}) To:{r.To.Name})\r\n";
+                dumpResult += $"  From:{r.From.Name} ({(r.FromCardinality == Relationship.Cardinality.Many ? '*' : '1')}){relationshipDirection}({(r.ToCardinality == Relationship.Cardinality.Many ? '*' : '1')}) To:{r.To.Name}\r\n";
             }
-
-            Log.Verbose("Dump relationships:\r\n" + dumpResult);
+            textResult.WriteRichText("{bold}{ul}Dump relationships{reset}\r\n" + dumpResult);
         }
 
         private static string DumpTablePaths(Table table)
         {
             string dumpResult = string.Empty;
-            dumpResult += table.SourcePaths.Any() ? $"TABLE {table.Name}\r\n" : string.Empty;
+            dumpResult += table.SourcePaths.Any() ? $"{{bold}}TABLES{{!bold}} {table.Name}\r\n" : string.Empty;
             foreach (var p in table.SourcePaths)
             {
-                dumpResult = DumpPath(p);
+                dumpResult = DumpPath(p,false, showPathName: true);
             }
             return dumpResult;
         }
 
-        private static string DumpPath(Path p)
+        private static string DumpPath(Path p, bool ambiguous, bool showPathName = false)
         {
-            string dumpResult = $"    {p.From.Name} --> {p.To.Name}\r\n";
+            string dumpResult = showPathName ? $"  {p.From.Name} --> {p.To.Name}\r\n" : string.Empty;
             var firstRelationship = p.Relationships.First();
             var sourceTable = p.From;
             var sourceColumn = firstRelationship.GetColumn(sourceTable);
-            dumpResult += $"        {sourceTable.Name}[{sourceColumn}]";
+            dumpResult += $"    {sourceTable.Name}[{sourceColumn}]";
             foreach (var r in p.Relationships)
             {
                 var destTable = r.GetDestTable(sourceTable);
@@ -113,12 +114,14 @@ namespace RelationshipsStudio
                 dumpResult += $" --> {destTable.Name}[{destColumn}]";
                 sourceTable = destTable;
             }
-            dumpResult += $" {(p.Active ? "*ACTIVE*" : "-inactive-")} P:{p.Priority} W:{p.Weight}{(p.Current ? " ***CURRENT***" : "")}\r\n";
+            dumpResult += $" {(p.Active ? "{bold}{blue}ACTIVE{reset}" : "{red}inactive{reset}")} P:{p.Priority} W:{p.Weight}{(p.Current ? $" {{!{(ambiguous?"yellow":"palegreen")}}}{{{(ambiguous ? "red" : "fg")}}}{{bold}}CURRENT{{reset}}" : "")}\r\n";
             return dumpResult;
         }
 
         public void DumpPathAllTables()
         {
+            Log.Information("Dump paths");
+
             string dumpResult = string.Empty;
             if (StudioModel == null)
             {
@@ -131,11 +134,13 @@ namespace RelationshipsStudio
                 dumpResult += DumpTablePaths(t);
             }
 
-            Log.Verbose("Dump paths:\r\n" + dumpResult);
+            textResult.WriteRichText("{bold}{ul}Dump paths{reset}\r\n" + dumpResult);
         }
 
         public void DumpAmbiguities()
         {
+            Log.Information("Dump ambiguities");
+
             string dumpResult = string.Empty;
             if (StudioModel == null)
             {
@@ -145,7 +150,7 @@ namespace RelationshipsStudio
 
             foreach (var (lines, groupName) in GroupRelationshipsModifiers(settings.Relationships))
             {
-                dumpResult += $"*** RELATIONSHIP GROUP {groupName} ***";
+                dumpResult += $"{{bold}}{{maroon}}*** RELATIONSHIP GROUP {groupName} ***{{reset}}\r\n";
                 // var relationshipModifiers = ParseRelationshipModifiers(settings.Relationships).ToList();
                 var relationshipModifiers = ParseRelationshipModifiers(lines).ToList();
 
@@ -160,24 +165,24 @@ namespace RelationshipsStudio
                         select path;
                     dumpResult += currentPaths.Count() switch
                     {
-                        0 => "  NO ACTIVE PATHS\r\n",
-                        1 => "  SELECTED PATH:\r\n",
-                        _ => "  AMBIGUOUS PATHS:\r\n"
+                        0 => "  {!lightgray}{bold}NO ACTIVE PATHS{reset}\r\n",
+                        1 => "  {!powderblue}{bold}SELECTED PATH{reset}:\r\n",
+                        _ => "  {!lightyellow}{red}{bold}AMBIGUOUS PATHS{reset}:\r\n"
                     };
 
                     foreach (var path in currentPaths)
                     {
-                        dumpResult += DumpPath(path);
+                        dumpResult += DumpPath(path, currentPaths.Count() > 1);
                     }
-                    dumpResult += "  Other paths:\r\n";
+                    dumpResult += "  {!whitesmoke}{bold}Other paths{reset}:\r\n";
 
                     foreach (var path in disambiguatedPath.Where(p => !p.Current))
                     {
-                        dumpResult += DumpPath(path);
+                        dumpResult += DumpPath(path, false);
                     }
                 }
 
-                Log.Verbose("Dump paths:\r\n" + dumpResult);
+                textResult.WriteRichText("{bold}{ul}Dump ambiguities{reset}\r\n" + dumpResult);
             }
         }
 
@@ -197,7 +202,7 @@ namespace RelationshipsStudio
         private void Studio_Load(object sender, EventArgs e)
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
+                .MinimumLevel.Debug()
                 .WriteTo.RichTextBox(logDisplay, theme: ThemePresets.Light)
             .CreateLogger();
 
@@ -279,16 +284,23 @@ namespace RelationshipsStudio
             }
         }
 
+        public void DumpRelationshipModifiersGroups(IEnumerable<(IEnumerable<string> lines, string groupName)> modifiers)
+        {
+            textResult.WriteRichText($"{{bold}}{{ul}}Relationship modifiers{{reset}}\r\n", append: false);
+            foreach (var (lines, groupName) in modifiers)
+            {
+                textResult.WriteRichText($"{{bold}}GROUP {groupName}{{reset}}\r\n", append:true);
+                foreach (var modifier in ParseRelationshipModifiers(lines))
+                {
+                        textResult.WriteRichText($"  ({modifier.Level}) {modifier.Type}: '{modifier.Relationship.To.Name}'[{modifier.Relationship.ToColumn}] -> '{modifier.Relationship.From.Name}'[{modifier.Relationship.FromColumn}] {modifier.Direction}\r\n",append:true);
+                }
+
+            }
+        }
+  
         public void ParseGroupRelationshipModifiers(string text)
         {
-            foreach (var (lines, groupName) in GroupRelationshipsModifiers(text))
-            {
-                Log.Verbose($"*** GROUP {groupName} ***");
-                // Skip warning to show debug info
-#pragma warning disable CA1806 // Do not ignore method results
-                ParseRelationshipModifiers(lines).ToList();
-#pragma warning restore CA1806 // Do not ignore method results
-            }
+            DumpRelationshipModifiersGroups(GroupRelationshipsModifiers(text));
         }
 
         public IEnumerable<RelationshipModifier> ParseRelationshipModifiers(IEnumerable<string> lines)
