@@ -155,7 +155,7 @@ namespace RelationshipsStudio
                 {
                     string groupResult = $"{p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name} : {p2p.Count()} relationships\r\n";
 
-                    var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where( p => p.Active || !onlyAmbiguities);
+                    var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where(p => p.Active || !onlyAmbiguities);
                     var currentPaths =
                         from path in disambiguatedPath
                         where path.Current
@@ -187,6 +187,45 @@ namespace RelationshipsStudio
 
             return dumpResult;
         }
+
+        private string ValidatePath(Path path, IEnumerable<RelationshipModifier>? useRelationships = null)
+        {
+            Debug.Assert(StudioModel != null);
+            return StudioModel.DaxSimulatePath(path, useRelationships);
+            // return StudioModel.DaxValidatePath(path,useRelationships);
+        }
+
+        private string ValidationQueries()
+        {
+            string dumpResult = string.Empty;
+            if (StudioModel == null)
+            {
+                Log.Error("StudioModel not available.");
+                return dumpResult;
+            }
+
+            foreach (var (lines, groupName) in GroupRelationshipsModifiers(settings.Relationships))
+            {
+                dumpResult += $"{{bold}}{{maroon}}*** RELATIONSHIP GROUP {groupName} ***{{reset}}\r\n";
+                var relationshipModifiers = ParseRelationshipModifiers(lines).ToList();
+
+                foreach (var p2p in StudioModel.Ambiguities)
+                {
+                    string groupResult = $"{p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}\r\n";
+
+                    var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where(p => p.Active);
+                    var currentPaths =
+                        from path in disambiguatedPath
+                        where path.Current
+                        select path;
+                    if (currentPaths.Count() != 1) continue;
+
+                    dumpResult += groupResult + "\n\r" + ValidatePath(currentPaths.Single(),relationshipModifiers);
+                }
+            }
+            return dumpResult;
+        }
+
         public void DumpPathSelection()
         {
             Log.Information("Dump complete path selection");
@@ -433,6 +472,12 @@ namespace RelationshipsStudio
 1,USERELATIONSHIP,C[Name],A[Name]
 2,USERELATIONSHIP,C[Name],B1[Name]
 ";
+        }
+
+        private void BtnValidateSelection_Click(object sender, EventArgs e)
+        {
+            textResult.WriteRichText($"{{bold}}{{ul}}Relationship modifiers{{reset}}\r\n", append: false);
+            textResult.WriteRichText(ValidationQueries());
         }
     }
 }

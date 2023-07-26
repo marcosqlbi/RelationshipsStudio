@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            BtnPathSelection = new Button();
             BtnRelationships = new Button();
             BtnGroups = new Button();
             buttonPaths = new Button();
@@ -45,7 +46,7 @@
             panel2 = new Panel();
             btnAddSyntaxExample = new Button();
             label2 = new Label();
-            BtnPathSelection = new Button();
+            BtnValidateSelection = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -60,6 +61,7 @@
             // 
             // panel1
             // 
+            panel1.Controls.Add(BtnValidateSelection);
             panel1.Controls.Add(BtnPathSelection);
             panel1.Controls.Add(BtnRelationships);
             panel1.Controls.Add(BtnGroups);
@@ -74,6 +76,16 @@
             panel1.Size = new Size(1551, 96);
             panel1.TabIndex = 1;
             // 
+            // BtnPathSelection
+            // 
+            BtnPathSelection.Location = new Point(275, 46);
+            BtnPathSelection.Name = "BtnPathSelection";
+            BtnPathSelection.Size = new Size(148, 34);
+            BtnPathSelection.TabIndex = 7;
+            BtnPathSelection.Text = "Path Selection";
+            BtnPathSelection.UseVisualStyleBackColor = true;
+            BtnPathSelection.Click += BtnPathSelection_Click;
+            // 
             // BtnRelationships
             // 
             BtnRelationships.Location = new Point(975, 46);
@@ -86,7 +98,7 @@
             // 
             // BtnGroups
             // 
-            BtnGroups.Location = new Point(444, 46);
+            BtnGroups.Location = new Point(641, 46);
             BtnGroups.Name = "BtnGroups";
             BtnGroups.Size = new Size(130, 34);
             BtnGroups.TabIndex = 5;
@@ -242,15 +254,15 @@
             label2.Text = "Relationships Settings";
             label2.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // BtnPathSelection
+            // BtnValidateSelection
             // 
-            BtnPathSelection.Location = new Point(275, 46);
-            BtnPathSelection.Name = "BtnPathSelection";
-            BtnPathSelection.Size = new Size(148, 34);
-            BtnPathSelection.TabIndex = 7;
-            BtnPathSelection.Text = "Path Selection";
-            BtnPathSelection.UseVisualStyleBackColor = true;
-            BtnPathSelection.Click += BtnPathSelection_Click;
+            BtnValidateSelection.Location = new Point(445, 46);
+            BtnValidateSelection.Name = "BtnValidateSelection";
+            BtnValidateSelection.Size = new Size(180, 34);
+            BtnValidateSelection.TabIndex = 8;
+            BtnValidateSelection.Text = "Validate Selection";
+            BtnValidateSelection.UseVisualStyleBackColor = true;
+            BtnValidateSelection.Click += BtnValidateSelection_Click;
             // 
             // Studio
             // 
@@ -298,5 +310,6 @@
         private RichTextBox logDisplay;
         private RichTextBox textResult;
         private Button BtnPathSelection;
+        private Button BtnValidateSelection;
     }
 }
