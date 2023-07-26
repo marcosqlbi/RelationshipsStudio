@@ -1,0 +1,47 @@
+﻿// Check relationship for relationship-ambiguity-4-error-tier-3
+
+// Calculate propagation using the engine
+EVALUATE 
+SUMMARIZECOLUMNS(
+     A[Name],
+     "Result", CALCULATE (
+     	COUNTROWS ( VALUES ( C ) ),
+        USERELATIONSHIP ( A[Name], B2[Name] ),
+        USERELATIONSHIP ( B2[Name], B3[Name] ),
+        USERELATIONSHIP ( B3[Name], C[Name] )
+        
+     )
+)
+ORDER BY A[Name]
+
+// Calculate propagation simulating the selected path
+EVALUATE
+VAR R1 =
+    CALCULATETABLE ( 
+    	SUMMARIZE ( A, A[Name], B2[Name] ),
+    	USERELATIONSHIP ( A[Name], B2[Name] )
+    )
+VAR R2 =
+    TREATAS ( R1, A[Name], B3[Name] )
+VAR R3 =
+    NATURALLEFTOUTERJOIN ( R1, R2 )
+VAR R4 = 
+	CALCULATETABLE (
+		CALCULATETABLE (
+			SUMMARIZE ( C, B3[Name], C[Name] ),
+			USERELATIONSHIP ( B3[Name], C[Name] ),
+			CROSSFILTER ( B3[Name], C[Name], ONEWAY )
+		)
+		// INSERT NON DI CROSSFILTER PER TUTTE LE RELAZIONI DEL MODELLO - O FARE FUORI
+	)
+VAR R5 = 
+    NATURALLEFTOUTERJOIN ( R3, R4 )
+VAR Result =
+    NATURALLEFTOUTERJOIN ( R5, C )
+RETURN
+    GROUPBY ( Result, A[Name], "Result", COUNTX ( CURRENTGROUP (), 1 ) )
+ORDER BY A[Name]
+
+/* 
+1-MANY --> SUMMARIZE ( F, D[Key], F[Key] )
+MANY-1 --> SUMMARIZE ( F, F[Key], D[Key] )

@@ -172,10 +172,11 @@ namespace RelationshipsStudio
             // Sort by prioritization - in each group there are paths with the same priority
             // 2023-07-25: added disambiguation by longer depth of relationships - not documented,
             //             but it corresponds to the current implementation, verified for Type 1 and Type 2
+            // 2023-07-26: compute Depth only for Tier 1/2/3 (it seems not used in Tier 4/5/6)
             var prioritization =
                 from p in inspectPaths
                 where p.Path.Active == true
-                group p by (p.Path.Priority, p.Path.Weight, Depth: p.Path.Relationships.Count()) into priorityBucket
+                group p by (p.Path.Priority, p.Path.Weight, Depth: p.Path.Priority <= PriorityType.Type3_ManyToOne ? p.Path.Relationships.Count() : -1) into priorityBucket
                 orderby priorityBucket.Key.Priority ascending, priorityBucket.Key.Weight descending, priorityBucket.Key.Depth descending
                 select priorityBucket;
 
