@@ -1,5 +1,5 @@
 {
-  "name": "relationships-ambiguity-3",
+  "name": "relationships-ambiguity-5",
   "compatibilityLevel": 1550,
   "model": {
     "culture": "en-US",
@@ -260,6 +260,36 @@
             ],
             "formatString": "0",
             "lineageTag": "12a3972f-bc96-4d82-bbde-16e681e1c707"
+          },
+          {
+            "name": "Test B1/B2",
+            "expression": [
+              "",
+              "CALCULATE (",
+              "    CALCULATE ( ",
+              "        [Test],",
+              "        USERELATIONSHIP ( C[Name], B2[Name] )",
+              "    ),",
+              "    USERELATIONSHIP ( C[Name], B1[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "1cc08f4b-1c21-479f-a89c-c18094b0f6f9"
+          },
+          {
+            "name": "Test B2/B1",
+            "expression": [
+              "",
+              "CALCULATE (",
+              "    CALCULATE ( ",
+              "        [Test],",
+              "        USERELATIONSHIP ( C[Name], B1[Name] )",
+              "    ),",
+              "    USERELATIONSHIP ( C[Name], B2[Name] )",
+              ")"
+            ],
+            "formatString": "0",
+            "lineageTag": "19197b36-8dfa-4682-8dfe-b5ff43652846"
           }
         ],
         "annotations": [
@@ -271,22 +301,6 @@
       }
     ],
     "relationships": [
-      {
-        "name": "529f390f-4e73-4518-9824-34b1d981c44f",
-        "fromTable": "A",
-        "fromColumn": "Name",
-        "toTable": "B1",
-        "toColumn": "Name",
-        "crossFilteringBehavior": "bothDirections"
-      },
-      {
-        "name": "4b4fa474-5987-4de4-bcf6-1e1bcf2e21bd",
-        "fromTable": "A",
-        "fromColumn": "Name",
-        "toTable": "B2",
-        "toColumn": "Name",
-        "crossFilteringBehavior": "bothDirections"
-      },
       {
         "name": "17ed2693-0f4b-45ec-add7-3064e829bbac",
         "fromTable": "B1",
@@ -306,13 +320,28 @@
         "crossFilteringBehavior": "bothDirections"
       },
       {
-        "name": "5a2955b8-e3bf-406a-a8c1-8e1add2acd55",
-        "fromTable": "A",
+        "name": "529f390f-4e73-4518-9824-34b1d981c44f",
+        "toCardinality": "many",
+        "fromTable": "B1",
         "fromColumn": "Name",
-        "toTable": "C",
+        "toTable": "A",
+        "toColumn": "Name"
+      },
+      {
+        "name": "4b4fa474-5987-4de4-bcf6-1e1bcf2e21bd",
+        "fromTable": "B2",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name"
+      },
+      {
+        "name": "5a2955b8-e3bf-406a-a8c1-8e1add2acd55",
+        "toCardinality": "many",
+        "fromTable": "C",
+        "fromColumn": "Name",
+        "toTable": "A",
         "toColumn": "Name",
-        "isActive": false,
-        "crossFilteringBehavior": "bothDirections"
+        "isActive": false
       }
     ],
     "cultures": [

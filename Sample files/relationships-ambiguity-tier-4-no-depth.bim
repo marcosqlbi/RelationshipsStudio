@@ -1,5 +1,5 @@
 {
-  "name": "relationships-ambiguity-3",
+  "name": "relationships-ambiguity-tier-4-no-depth",
   "compatibilityLevel": 1550,
   "model": {
     "culture": "en-US",
@@ -162,7 +162,8 @@
               "",
               "CALCULATE ( ",
               "    [Test],",
-              "    USERELATIONSHIP ( C[Name], B1[Name] )",
+              "    USERELATIONSHIP ( C[Name], B1[Name] ),",
+              "    USERELATIONSHIP( A[Name], B1[Name] )",
               ")"
             ],
             "formatString": "0",
@@ -174,7 +175,9 @@
               "",
               "CALCULATE ( ",
               "    [Test],",
-              "    USERELATIONSHIP ( C[Name], B2[Name] )",
+              "    USERELATIONSHIP ( C[Name], B3[Name] ),",
+              "    USERELATIONSHIP ( A[Name], B2[Name] ),",
+              "    USERELATIONSHIP ( B2[Name], B3[Name] )",
               ")"
             ],
             "formatString": "0",
@@ -187,7 +190,10 @@
               "CALCULATE ( ",
               "    [Test],",
               "    USERELATIONSHIP ( C[Name], B1[Name] ),",
-              "    USERELATIONSHIP ( C[Name], B2[Name] )",
+              "    USERELATIONSHIP ( C[Name], B3[Name] ),",
+              "    USERELATIONSHIP ( A[Name], B2[Name] ),",
+              "    USERELATIONSHIP ( A[Name], B1[Name] ),",
+              "    USERELATIONSHIP ( B2[Name], B3[Name] )",
               ")"
             ],
             "formatString": "0",
@@ -212,7 +218,8 @@
               "CALCULATE ( ",
               "    [Test],",
               "    USERELATIONSHIP ( C[Name], A[Name] ),",
-              "    USERELATIONSHIP ( C[Name], B1[Name] )",
+              "    USERELATIONSHIP ( C[Name], B1[Name] ),",
+              "    USERELATIONSHIP( A[Name], B1[Name] )",
               ")"
             ],
             "formatString": "0",
@@ -224,7 +231,9 @@
               "",
               "CALCULATE ( ",
               "    [Test],",
-              "    USERELATIONSHIP ( C[Name], B2[Name] ),",
+              "    USERELATIONSHIP ( A[Name], B2[Name] ),",
+              "    USERELATIONSHIP ( B2[Name], B3[Name] ),",
+              "    USERELATIONSHIP ( C[Name], B3[Name] ),",
               "    USERELATIONSHIP ( C[Name], A[Name] )",
               ")"
             ],
@@ -240,7 +249,8 @@
               "        [Test],",
               "        USERELATIONSHIP ( C[Name], A[Name] )",
               "    ),",
-              "    USERELATIONSHIP ( C[Name], B1[Name] )",
+              "    USERELATIONSHIP ( C[Name], B1[Name] ),",
+              "    USERELATIONSHIP ( A[Name], B1[Name] )",
               ")"
             ],
             "formatString": "0",
@@ -253,7 +263,8 @@
               "CALCULATE (",
               "    CALCULATE ( ",
               "        [Test],",
-              "        USERELATIONSHIP ( C[Name], B1[Name] )",
+              "        USERELATIONSHIP ( C[Name], B1[Name] ),",
+              "        USERELATIONSHIP( B1[Name], A[Name] )",
               "    ),",
               "    USERELATIONSHIP ( C[Name], A[Name] )",
               ")"
@@ -268,25 +279,47 @@
             "value": "168c4c9df9fc4e2ca2169aed5053eb07"
           }
         ]
+      },
+      {
+        "name": "B3",
+        "lineageTag": "11610f6c-96ef-4612-9497-ff653649ea83",
+        "columns": [
+          {
+            "type": "calculatedTableColumn",
+            "name": "Name",
+            "dataType": "string",
+            "isNameInferred": true,
+            "isDataTypeInferred": true,
+            "sourceColumn": "[Name]",
+            "lineageTag": "3886bc33-78a5-4adb-82fd-f4c515c49296",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "B3",
+            "mode": "import",
+            "source": {
+              "type": "calculated",
+              "expression": "SELECTCOLUMNS({\"C\"}, \"Name\", [Value] )"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "PBI_Id",
+            "value": "61efc0e89f11420c85ac1782abff4157"
+          }
+        ]
       }
     ],
     "relationships": [
-      {
-        "name": "529f390f-4e73-4518-9824-34b1d981c44f",
-        "fromTable": "A",
-        "fromColumn": "Name",
-        "toTable": "B1",
-        "toColumn": "Name",
-        "crossFilteringBehavior": "bothDirections"
-      },
-      {
-        "name": "4b4fa474-5987-4de4-bcf6-1e1bcf2e21bd",
-        "fromTable": "A",
-        "fromColumn": "Name",
-        "toTable": "B2",
-        "toColumn": "Name",
-        "crossFilteringBehavior": "bothDirections"
-      },
       {
         "name": "17ed2693-0f4b-45ec-add7-3064e829bbac",
         "fromTable": "B1",
@@ -297,8 +330,34 @@
         "crossFilteringBehavior": "bothDirections"
       },
       {
-        "name": "f9a31a3b-4ee9-4251-bbca-19e1c3ffdb9e",
+        "name": "529f390f-4e73-4518-9824-34b1d981c44f",
+        "fromTable": "B1",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name",
+        "isActive": false
+      },
+      {
+        "name": "5a2955b8-e3bf-406a-a8c1-8e1add2acd55",
+        "toCardinality": "many",
+        "fromTable": "C",
+        "fromColumn": "Name",
+        "toTable": "A",
+        "toColumn": "Name",
+        "isActive": false
+      },
+      {
+        "name": "cdeb9fc3-b42e-42ac-94ba-2e9a13c8e520",
         "fromTable": "B2",
+        "fromColumn": "Name",
+        "toTable": "B3",
+        "toColumn": "Name",
+        "isActive": false,
+        "crossFilteringBehavior": "bothDirections"
+      },
+      {
+        "name": "2476eef1-a58a-4eb1-95cd-dfee6197bfec",
+        "fromTable": "B3",
         "fromColumn": "Name",
         "toTable": "C",
         "toColumn": "Name",
@@ -306,13 +365,12 @@
         "crossFilteringBehavior": "bothDirections"
       },
       {
-        "name": "5a2955b8-e3bf-406a-a8c1-8e1add2acd55",
-        "fromTable": "A",
+        "name": "4b4fa474-5987-4de4-bcf6-1e1bcf2e21bd",
+        "fromTable": "B2",
         "fromColumn": "Name",
-        "toTable": "C",
+        "toTable": "A",
         "toColumn": "Name",
-        "isActive": false,
-        "crossFilteringBehavior": "bothDirections"
+        "isActive": false
       }
     ],
     "cultures": [

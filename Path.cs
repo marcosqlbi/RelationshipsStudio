@@ -177,10 +177,12 @@ namespace RelationshipsStudio
                 where p.Path.Active == true
                 group p by (p.Path.Priority, p.Path.Weight, Depth: p.Path.Relationships.Count()) into priorityBucket
                 orderby priorityBucket.Key.Priority ascending, priorityBucket.Key.Weight descending, priorityBucket.Key.Depth descending
-                // Commented version that corresponds to documented behavior (ambigous path with different length should raise an error)
-                // group p by (p.Path.Priority, p.Path.Weight) into priorityBucket
-                // orderby priorityBucket.Key.Priority ascending, priorityBucket.Key.Weight descending
                 select priorityBucket;
+
+            // Commented version that corresponds to documented behavior (ambigous path with different length should raise an error)
+            // group p by (p.Path.Priority, p.Path.Weight) into priorityBucket
+            // orderby priorityBucket.Key.Priority ascending, priorityBucket.Key.Weight descending
+            // 2023-07-25: end of comment 
 
             var priorityPaths = prioritization.FirstOrDefault();
             if (priorityPaths == null)
