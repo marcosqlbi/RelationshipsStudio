@@ -123,7 +123,7 @@ CALCULATETABLE (
 {string.Concat(x)}
     RETURN Result{string.Concat(allRelationships)}
 )
-"; // TODO - add a last step with the join with the destination, then modify Result and implement the GROUPBY 
+"; 
             return queryEngine;
         }
 
