@@ -45,13 +45,13 @@ namespace RelationshipsStudio
             string queryEngine = @$"EVALUATE
 CALCULATETABLE (
     SUMMARIZECOLUMNS ( 
-        {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)},
+        {ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From))},
         ""Result"", CALCULATE (
             COUNTROWS ( VALUES ( {TableReference(path.To.Name)} ) ){string.Concat(relationships)}
         )
     ){string.Concat(allRelationships)}
 )
-ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)}
+ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From))}
 ";
             return queryEngine;
         }
@@ -111,7 +111,7 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)
 
             var x = steps.ToList()
                 .Append($"    VAR {STEP_PREFIX}{++varStep} =\r\n        NATURALLEFTOUTERJOIN ( {STEP_PREFIX}{varStep - 1}, {TableReference(path.To.Name)} )\r\n" )
-                .Append($"    VAR Result=\r\n        GROUPBY( {STEP_PREFIX}{varStep}, {ColumnReference(path.From.Name,path.Relationships.First().FromColumn)}, \"Result\", COUNTX ( CURRENTGROUP(), 1 ) )" );
+                .Append($"    VAR Result=\r\n        GROUPBY( {STEP_PREFIX}{varStep}, {ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From))}, \"Result\", COUNTX ( CURRENTGROUP(), 1 ) )" );
             var allRelationships = model.Relationships.Select(r =>
             {
                 return @$",
@@ -122,7 +122,7 @@ CALCULATETABLE (
 {string.Concat(x)}
     RETURN Result{string.Concat(allRelationships)}
 )
-ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)}
+ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From))}
 "; 
             return queryEngine;
         }

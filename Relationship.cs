@@ -149,9 +149,15 @@ namespace RelationshipsStudio
         public Cardinality GetSourceCardinality(Table sourceTable)
             => InvertSourceDest(sourceTable) ? this.FromCardinality : this.ToCardinality;
 
+        public string GetSourceColumn(Table sourceTable)
+            => InvertSourceDest(sourceTable) ? this.FromColumn : this.ToColumn;
+
         public Cardinality GetDestCardinality(Table sourceTable)
             => InvertSourceDest(sourceTable) ? this.ToCardinality : this.FromCardinality;
-        
+
+        public string GetDestColumn(Table sourceTable)
+            => InvertSourceDest(sourceTable) ? this.ToColumn : this.FromColumn;
+
         public Table GetDestTable(Table sourceTable)
         {
             Table destTable = InvertSourceDest(sourceTable) ? this.To : this.From;

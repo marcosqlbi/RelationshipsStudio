@@ -288,14 +288,21 @@ namespace RelationshipsStudio
 
             foreach (var (lines, groupName) in GroupRelationshipsModifiers(settings.Relationships))
             {
-                dumpResult += $"{{bold}}{{maroon}}*** RELATIONSHIP GROUP {groupName} ***{{reset}}";
+                string relationshipDescription = $"RELATIONSHIP GROUP {groupName}";
+                Log.Information($"Validating {relationshipDescription}");
+                Application.DoEvents();
+                dumpResult += $"{{bold}}{{maroon}}*** {relationshipDescription} ***{{reset}}";
                 var relationshipModifiers = ParseRelationshipModifiers(lines).ToList();
 
                 int totalPaths = 0, checkedPaths = 0, validPaths = 0, pathsNotActive = 0;
                 foreach (var p2p in StudioModel.Ambiguities)
                 {
                     totalPaths++;
-                    string groupResult = $"//\r\n// PATH {p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}\r\n//\r\n";
+
+                    string pathDescription = $"PATH {p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}";
+                    Log.Information($"Validating {pathDescription}");
+                    Application.DoEvents();
+                    string groupResult = $"//\r\n// {pathDescription}\r\n//\r\n";
 
                     var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where(p => p.Active);
                     var currentPaths = 
