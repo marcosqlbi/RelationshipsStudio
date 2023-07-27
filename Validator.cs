@@ -66,7 +66,7 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)
                 string OneToMany()
                     => @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( VALUES ( {TableReference(r.From.Name)} ), {ColumnReference(r.To.Name, r.ToColumn)}, {ColumnReference(r.From.Name, r.FromColumn)} ),
+            SUMMARIZE ( DISTINCT ( {TableReference(r.From.Name)} ), {ColumnReference(r.To.Name, r.ToColumn)}, {ColumnReference(r.From.Name, r.FromColumn)} ),
             USERELATIONSHIP ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
             CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, ONEWAY )
         )" + "\r\n";
@@ -74,7 +74,7 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)
                 string ManyToOne()
                     => @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( VALUES ( {TableReference(r.To.Name)} ), {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
+            SUMMARIZE ( DISTINCT ( {TableReference(r.To.Name)} ), {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
             USERELATIONSHIP ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
             CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, BOTH )
         )" + "\r\n";

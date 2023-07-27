@@ -288,25 +288,30 @@ namespace RelationshipsStudio
 
             foreach (var (lines, groupName) in GroupRelationshipsModifiers(settings.Relationships))
             {
-                dumpResult += $"{{bold}}{{maroon}}*** RELATIONSHIP GROUP {groupName} ***{{reset}}\r\n";
+                dumpResult += $"{{bold}}{{maroon}}*** RELATIONSHIP GROUP {groupName} ***{{reset}}";
                 var relationshipModifiers = ParseRelationshipModifiers(lines).ToList();
 
                 foreach (var p2p in StudioModel.Ambiguities)
                 {
-                    string groupResult = $"PATH {p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}\r\n";
+                    string groupResult = $"//\r\n// PATH {p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}\r\n//\r\n";
 
                     var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where(p => p.Active);
                     var currentPaths =
                         from path in disambiguatedPath
                         where path.Current
                         select path;
+                    if (!currentPaths.Any()) dumpResult += " {bold}{!lightblue} NO PATHS {reset}\r\n";
                     if (currentPaths.Count() != 1) continue;
 
-                    if (!ValidatePath(currentPaths.Single(), connection, out string validateQueries, relationshipModifiers))
+                    if (ValidatePath(currentPaths.Single(), connection, out string validateQueries, relationshipModifiers))
                     {
-                        dumpResult += groupResult + "\r" + validateQueries;
+                        dumpResult += " {bold}{!lightgreen} PASS {reset}\r\n";
                     }
-                    
+                    else
+                    {
+                        dumpResult += " {bold}{!red}{white} FAIL {reset}\r\n";
+                        dumpResult += groupResult + validateQueries;
+                    }
                 }
             }
             return dumpResult;
