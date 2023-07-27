@@ -38,6 +38,26 @@ namespace RelationshipsStudio
             Many
         }
 
+        public string GetSymbol(Table sourceTable)
+            => $" ({
+                Relationship.GetSymbol(GetCardinality(sourceTable))})-{
+                Relationship.GetSymbol(CrossFilter,InvertSourceDest(sourceTable))}-({
+                Relationship.GetSymbol(GetDestCardinality(sourceTable))})";
+        
+        public static string GetSymbol(Cardinality cardinality)
+            => cardinality switch { 
+                Cardinality.One => "1", 
+                Cardinality.Many => "*", 
+                _ => "?" };
+
+        public static string GetSymbol(CrossFilterDirection direction, bool invert = false)
+            => direction switch { 
+                CrossFilterDirection.None => "| ", 
+                CrossFilterDirection.Both => "<>", 
+                CrossFilterDirection.OneWay => invert ? ">" : "<", 
+                CrossFilterDirection.OneWay_Inverted => invert ? "<" : ">", 
+                _ => "??" };
+
         public PropagationType GetFilterPropagation(Table sourceTable)
             => GetFilterPropagation(InvertSourceDest(sourceTable));
 
@@ -123,6 +143,15 @@ namespace RelationshipsStudio
             Debug.Assert(result.HasValue, "Invalid source table");
             return result.Value;
         }
+        public Cardinality GetCardinality(Table table)
+            => InvertSourceDest(table) ? this.FromCardinality : this.ToCardinality;
+
+        public Cardinality GetSourceCardinality(Table sourceTable)
+            => InvertSourceDest(sourceTable) ? this.FromCardinality : this.ToCardinality;
+
+        public Cardinality GetDestCardinality(Table sourceTable)
+            => InvertSourceDest(sourceTable) ? this.ToCardinality : this.FromCardinality;
+        
         public Table GetDestTable(Table sourceTable)
         {
             Table destTable = InvertSourceDest(sourceTable) ? this.To : this.From;

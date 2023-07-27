@@ -11,15 +11,15 @@ namespace RelationshipsStudio
     {
         [UserScopedSetting()]
         [DefaultSettingValue("")]
-        public string BimFilename
+        public string SelectedModel
         {
             get
             {
-                return (string)this[nameof(BimFilename)];
+                return (string)this[nameof(SelectedModel)];
             }
             set
             {
-               this[nameof(BimFilename)] = value;
+               this[nameof(SelectedModel)] = value;
             }
         }
 

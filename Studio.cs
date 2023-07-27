@@ -6,6 +6,10 @@ using System.Diagnostics;
 using System.Security.Policy;
 using System.Data.Common;
 using System.Text.RegularExpressions;
+using RelationshipsStudio.Tools;
+using System.Windows.Forms;
+using Microsoft.AnalysisServices.AdomdClient;
+using System.Data;
 
 namespace RelationshipsStudio
 {
@@ -18,10 +22,32 @@ namespace RelationshipsStudio
 
         Database? TabularDatabase;
         Model? StudioModel;
+        string ModelConnectionString => $"Provider=MSOLAP;Initial Catalog={TabularDatabase?.Name};{TabularDatabase?.Server.ConnectionString}";
+
+        private void OpenLocalModel(PowerBIInstance localModel)
+        {
+            TabularDatabase = null;
+            try
+            {
+                string serverName = $"localhost:{localModel.Port}";
+                using var server = new Server();
+                Log.Verbose("Connecting to {sergerName}");
+                server.Connect($"Data Source={serverName};");
+                TabularDatabase = server.Databases[0];
+                PopulateModel();
+                DumpRelatioships();
+                Log.Verbose("Model updated");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"OpenLocalModel error: {ex.Message}");
+            }
+        }
 
         private void OpenBimFile()
         {
-            var json = File.ReadAllText(settings.BimFilename);
+            TabularDatabase = null;
+            var json = File.ReadAllText(settings.SelectedModel);
             TabularDatabase = JsonSerializer.DeserializeDatabase(json);
             PopulateModel();
             DumpRelatioships();
@@ -58,10 +84,6 @@ namespace RelationshipsStudio
             }
         }
 
-        private void WriteResult(string content)
-        {
-            //content.Split("")
-        }
         private void DumpRelatioships()
         {
             Log.Information("Dump relationships");
@@ -81,10 +103,11 @@ namespace RelationshipsStudio
             dumpResult += "{bold}RELATIONSHIPS{!bold}\r\n";
             foreach (var r in StudioModel.Relationships)
             {
-                string relationshipDirection = (r.CrossFilter == Relationship.CrossFilterDirection.None)
-                    ? "---"
-                    : $"{(r.CrossFilter == Relationship.CrossFilterDirection.OneWay ? "-" : "<")}-{(r.CrossFilter == Relationship.CrossFilterDirection.OneWay_Inverted ? "-" : ">")}";
-                dumpResult += $"  From:{r.From.Name} ({(r.FromCardinality == Relationship.Cardinality.Many ? '*' : '1')}){relationshipDirection}({(r.ToCardinality == Relationship.Cardinality.Many ? '*' : '1')}) To:{r.To.Name}\r\n";
+                string relationshipDirection = r.GetSymbol(r.From);
+                //(r.CrossFilter == Relationship.CrossFilterDirection.None)
+                //    ? "---"
+                //    : $"{(r.CrossFilter == Relationship.CrossFilterDirection.OneWay ? "-" : "<")}-{(r.CrossFilter == Relationship.CrossFilterDirection.OneWay_Inverted ? "-" : ">")}";
+                dumpResult += $"  {r.To.Name} {relationshipDirection} {r.From.Name}\r\n";
             }
             textResult.WriteRichText("{bold}{ul}Dump relationships{reset}\r\n" + dumpResult);
         }
@@ -95,12 +118,12 @@ namespace RelationshipsStudio
             dumpResult += table.SourcePaths.Any() ? $"{{bold}}TABLES{{!bold}} {table.Name}\r\n" : string.Empty;
             foreach (var p in table.SourcePaths)
             {
-                dumpResult = DumpPath(p, false, showPathName: true);
+                dumpResult = DumpPath(p, false, showPathName: true, showState: true);
             }
             return dumpResult;
         }
 
-        private static string DumpPath(Path p, bool ambiguous, bool showPathName = false)
+        private static string DumpPath(Path p, bool ambiguous, bool showPathName = false, bool showState = false)
         {
             string dumpResult = showPathName ? $"  {p.From.Name} --> {p.To.Name}\r\n" : string.Empty;
             var firstRelationship = p.Relationships.First();
@@ -111,10 +134,17 @@ namespace RelationshipsStudio
             {
                 var destTable = r.GetDestTable(sourceTable);
                 var destColumn = r.GetColumn(destTable);
-                dumpResult += $" --> {destTable.Name}[{destColumn}]";
+                dumpResult += $" {
+                    Relationship.GetSymbol(r.GetCardinality(sourceTable))}-{
+                    Relationship.GetSymbol(r.CrossFilter,r.InvertSourceDest(destTable))}-{
+                    Relationship.GetSymbol(r.GetCardinality(destTable))} {
+                    destTable.Name}[{destColumn}]";
                 sourceTable = destTable;
             }
-            dumpResult += $" {(p.Active ? "{bold}{blue}ACTIVE{reset}" : "{red}inactive{reset}")} P:{p.Priority} W:{p.Weight} D:{p.Depth}{(p.Current ? $" {{!{(ambiguous ? "yellow" : "palegreen")}}}{{{(ambiguous ? "red" : "fg")}}}{{bold}}CURRENT{{reset}}" : "")}\r\n";
+            if (showState)
+            {
+                dumpResult += $" {(p.Active ? "{bold}{blue}ACTIVE{reset}" : "{red}inactive{reset}")} P:{p.Priority} W:{p.Weight} D:{p.Depth}{(p.Current ? $" {{!{(ambiguous ? "yellow" : "palegreen")}}}{{{(ambiguous ? "red" : "fg")}}}{{bold}}CURRENT{{reset}}" : "")}\r\n";
+            }
             return dumpResult;
         }
 
@@ -169,13 +199,13 @@ namespace RelationshipsStudio
 
                     foreach (var path in currentPaths)
                     {
-                        groupResult += DumpPath(path, currentPaths.Count() > 1);
+                        groupResult += DumpPath(path, currentPaths.Count() > 1, showState: true);
                     }
                     groupResult += "  {!whitesmoke}{bold}Other paths{reset}:\r\n";
 
                     foreach (var path in disambiguatedPath.Where(p => !p.Current))
                     {
-                        groupResult += DumpPath(path, false);
+                        groupResult += DumpPath(path, false, showState: true);
                     }
 
                     if (!onlyAmbiguities || disambiguatedPath.Count() > 1)
@@ -188,14 +218,66 @@ namespace RelationshipsStudio
             return dumpResult;
         }
 
-        private string ValidatePath(Path path, IEnumerable<RelationshipModifier>? useRelationships = null)
+        private bool CompareResultSets(AdomdDataReader reader1, AdomdDataReader reader2)
         {
-            Debug.Assert(StudioModel != null);
-            return StudioModel.DaxSimulatePath(path, useRelationships);
-            // return StudioModel.DaxValidatePath(path,useRelationships);
+            if (reader1.FieldCount != reader2.FieldCount) { return false; }
+            while (reader1.Read() && reader2.Read())
+            {
+                for (int i = 0; i < reader1.FieldCount; i++)
+                {
+                    if (!reader1[i].Equals(reader2[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
-        private string ValidationQueries()
+        private bool ValidatePath(Path path, AdomdConnection connection, out string validateQueries, IEnumerable<RelationshipModifier>? useRelationships = null)
+        {
+            Debug.Assert(StudioModel != null);
+            Debug.Assert(TabularDatabase != null);
+
+            bool validationResult = false;
+            validateQueries = $@"// ORIGINAL PATH
+// {DumpPath(path, false)}
+{StudioModel.DaxValidatePath(path, useRelationships)}
+
+// SIMULATE PATH
+// {DumpPath(path,false)}
+{StudioModel.DaxSimulatePath(path, useRelationships)}";
+
+            try
+            {
+                using AdomdCommand command = connection.CreateCommand();
+                command.CommandType = System.Data.CommandType.Text;
+                command.CommandText = validateQueries;
+                using AdomdDataReader reader = command.ExecuteReader();
+
+                var originalResult = reader.Cast<IDataRecord>().ToList();
+                if (!reader.NextResult())
+                {
+                    Log.Error("Missing simulation table");
+                    return false;
+                }
+                var simulationResult = reader.Cast<IDataRecord>().ToList();
+                validationResult = TableComparison.CompareDataRecords(originalResult, simulationResult);
+                Log.Write(
+                    validationResult ? Serilog.Events.LogEventLevel.Verbose : Serilog.Events.LogEventLevel.Warning,
+                    $"{(validationResult ? "Validated" : "Different content found in")} path {path.From.Name} --> {path.To.Name}"
+                );
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex.ToString() );
+                Log.Error($"Failed query:\r\n{validateQueries}");
+                validationResult = false;
+            }
+            return validationResult;
+        }
+
+        private string ValidationQueries(AdomdConnection connection)
         {
             string dumpResult = string.Empty;
             if (StudioModel == null)
@@ -211,7 +293,7 @@ namespace RelationshipsStudio
 
                 foreach (var p2p in StudioModel.Ambiguities)
                 {
-                    string groupResult = $"{p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}\r\n";
+                    string groupResult = $"PATH {p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}\r\n";
 
                     var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where(p => p.Active);
                     var currentPaths =
@@ -220,7 +302,11 @@ namespace RelationshipsStudio
                         select path;
                     if (currentPaths.Count() != 1) continue;
 
-                    dumpResult += groupResult + "\n\r" + ValidatePath(currentPaths.Single(),relationshipModifiers);
+                    if (!ValidatePath(currentPaths.Single(), connection, out string validateQueries, relationshipModifiers))
+                    {
+                        dumpResult += groupResult + "\r" + validateQueries;
+                    }
+                    
                 }
             }
             return dumpResult;
@@ -242,10 +328,10 @@ namespace RelationshipsStudio
 
         private void BtnBrowse(object sender, EventArgs e)
         {
-            openFile.FileName = settings.BimFilename;
+            openFile.FileName = settings.SelectedModel;
             if (openFile.ShowDialog() == DialogResult.OK)
             {
-                settings.BimFilename = openFile.FileName;
+                settings.SelectedModel = openFile.FileName;
                 OpenBimFile();
                 settings.Save();
             }
@@ -262,11 +348,27 @@ namespace RelationshipsStudio
 
             settings = new MyUserSettings();
             textRelationships.DataBindings.Add(new Binding(nameof(textRelationships.Text), settings, nameof(MyUserSettings.Relationships)));
-            textFilename.DataBindings.Add(new Binding(nameof(textFilename.Text), settings, nameof(MyUserSettings.BimFilename)));
+            CboLocalModels.DataBindings.Add(new Binding(nameof(CboLocalModels.Text), settings, nameof(MyUserSettings.SelectedModel)));
 
-            if (!string.IsNullOrWhiteSpace(textFilename.Text) && System.IO.Path.Exists(textFilename.Text))
+            var localModels = RefreshComboLocalModels();
+
+            if (!string.IsNullOrWhiteSpace(settings.SelectedModel) && System.IO.Path.Exists(settings.SelectedModel))
             {
                 OpenBimFile();
+            }
+            else
+            {
+                var localModel = localModels.FirstOrDefault(m => m.Name == settings.SelectedModel);
+                if (localModel != null)
+                {
+                    Log.Information($"Opening local model: {localModel.Name}");
+                    OpenLocalModel(localModel);
+                }
+                else if (!string.IsNullOrEmpty(settings.SelectedModel))
+                {
+                    Log.Warning($"Local model not found: {settings.SelectedModel}");
+                    settings.SelectedModel = string.Empty;
+                }
             }
         }
 
@@ -477,7 +579,31 @@ namespace RelationshipsStudio
         private void BtnValidateSelection_Click(object sender, EventArgs e)
         {
             textResult.WriteRichText($"{{bold}}{{ul}}Relationship modifiers{{reset}}\r\n", append: false);
-            textResult.WriteRichText(ValidationQueries());
+            using AdomdConnection connection = new(ModelConnectionString);
+            connection.Open();
+            textResult.WriteRichText(ValidationQueries(connection));
         }
+
+        private void BtnRefreshLocalInstancesList_Click(object sender, EventArgs e)
+        {
+            RefreshComboLocalModels();
+        }
+
+        private IEnumerable<PowerBIInstance> RefreshComboLocalModels()
+        {
+            var localInstances = PowerBIHelper.GetLocalInstances(false);
+            CboLocalModels.Items.AddRange(localInstances.ToArray());
+            return localInstances;
+        }
+
+        private void CboLocalModels_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Log.Information($"Selected index: {CboLocalModels.SelectedItem}");
+            if (CboLocalModels.SelectedItem is PowerBIInstance selectedModel)
+            {
+                OpenLocalModel(selectedModel);
+            }
+        }
+
     }
 }

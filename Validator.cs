@@ -42,8 +42,7 @@ namespace RelationshipsStudio
                 return @$",
     CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, NONE )";
             });
-            string queryEngine = @$"
-EVALUATE
+            string queryEngine = @$"EVALUATE
 CALCULATETABLE (
     SUMMARIZECOLUMNS ( 
         {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)},
@@ -52,6 +51,7 @@ CALCULATETABLE (
         )
     ){string.Concat(allRelationships)}
 )
+ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)}
 ";
             return queryEngine;
         }
@@ -66,7 +66,7 @@ CALCULATETABLE (
                 string OneToMany()
                     => @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( {TableReference(r.From.Name)}, {ColumnReference(r.To.Name, r.ToColumn)}, {ColumnReference(r.From.Name, r.FromColumn)} ),
+            SUMMARIZE ( VALUES ( {TableReference(r.From.Name)} ), {ColumnReference(r.To.Name, r.ToColumn)}, {ColumnReference(r.From.Name, r.FromColumn)} ),
             USERELATIONSHIP ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
             CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, ONEWAY )
         )" + "\r\n";
@@ -74,16 +74,16 @@ CALCULATETABLE (
                 string ManyToOne()
                     => @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( {TableReference(r.To.Name)}, {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
+            SUMMARIZE ( VALUES ( {TableReference(r.To.Name)} ), {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
             USERELATIONSHIP ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
             CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, BOTH )
         )" + "\r\n";
 
                 string ManyToMany()
                 {
-                    string previousStep = varStep > 1 ? $"{STEP_PREFIX}{varStep - 1}" : TableReference(r.From.Name);
                     string columnFrom = r.InvertSourceDest(fromTable) ? ColumnReference(r.From.Name, r.FromColumn) : ColumnReference(r.To.Name, r.ToColumn);
                     string columnTo = r.InvertSourceDest(fromTable) ? ColumnReference(r.To.Name, r.ToColumn) : ColumnReference(r.From.Name, r.FromColumn);
+                    string previousStep = varStep > 1 ? $"{STEP_PREFIX}{varStep - 1}" : $"VALUES ( {columnFrom} )";
                     return @$"
         GENERATE (
             {previousStep},
@@ -117,12 +117,12 @@ CALCULATETABLE (
                 return @$",
     CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, NONE )";
             });
-            string queryEngine = @$"
-EVALUATE
+            string queryEngine = @$"EVALUATE
 CALCULATETABLE (
 {string.Concat(x)}
     RETURN Result{string.Concat(allRelationships)}
 )
+ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().FromColumn)}
 "; 
             return queryEngine;
         }

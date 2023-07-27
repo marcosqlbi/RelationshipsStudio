@@ -5,18 +5,18 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using RelationshipsStudio.Tools;
 
 namespace RelationshipsStudio
 {
     public static partial class RichTextTools
     {
-
         private const int WM_USER = 0x0400;
         private const int EM_SETEVENTMASK = (WM_USER + 69);
         private const int WM_SETREDRAW = 0x0b;
 
-        [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
-        private static partial IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+        //[LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
+        //private static partial IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
         public static void WriteRichText(this RichTextBox richTextbox, string text, bool append=false)
         {
@@ -112,14 +112,14 @@ namespace RelationshipsStudio
 
             void BeginUpdate()
             {
-                SendMessage(richTextbox.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
-                OldEventMask = (IntPtr)SendMessage(richTextbox.Handle, EM_SETEVENTMASK, IntPtr.Zero, IntPtr.Zero);
+                NativeMethods.SendMessage(richTextbox.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
+                OldEventMask = (IntPtr)NativeMethods.SendMessage(richTextbox.Handle, EM_SETEVENTMASK, 0, IntPtr.Zero);
             }
 
             void EndUpdate()
             {
-                SendMessage(richTextbox.Handle, WM_SETREDRAW, (IntPtr)1, IntPtr.Zero);
-                SendMessage(richTextbox.Handle, EM_SETEVENTMASK, IntPtr.Zero, OldEventMask);
+                NativeMethods.SendMessage(richTextbox.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
+                NativeMethods.SendMessage(richTextbox.Handle, EM_SETEVENTMASK, 0, OldEventMask);
             }
 
         }

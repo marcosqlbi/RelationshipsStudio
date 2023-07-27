@@ -29,14 +29,16 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            CboLocalModels = new ComboBox();
+            BtnPbiDesktop = new Button();
+            BtnValidateSelection = new Button();
             BtnPathSelection = new Button();
             BtnRelationships = new Button();
             BtnGroups = new Button();
             buttonPaths = new Button();
             buttonDump = new Button();
-            textFilename = new TextBox();
             label1 = new Label();
-            btnLoadFilename = new Button();
+            BtnLoadFilename = new Button();
             openFile = new OpenFileDialog();
             splitContainer1 = new SplitContainer();
             splitContainer2 = new SplitContainer();
@@ -46,7 +48,6 @@
             panel2 = new Panel();
             btnAddSyntaxExample = new Button();
             label2 = new Label();
-            BtnValidateSelection = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -61,24 +62,58 @@
             // 
             // panel1
             // 
+            panel1.Controls.Add(CboLocalModels);
+            panel1.Controls.Add(BtnPbiDesktop);
             panel1.Controls.Add(BtnValidateSelection);
             panel1.Controls.Add(BtnPathSelection);
             panel1.Controls.Add(BtnRelationships);
             panel1.Controls.Add(BtnGroups);
             panel1.Controls.Add(buttonPaths);
             panel1.Controls.Add(buttonDump);
-            panel1.Controls.Add(textFilename);
             panel1.Controls.Add(label1);
-            panel1.Controls.Add(btnLoadFilename);
+            panel1.Controls.Add(BtnLoadFilename);
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1551, 96);
+            panel1.Size = new Size(1551, 138);
             panel1.TabIndex = 1;
+            // 
+            // CboLocalModels
+            // 
+            CboLocalModels.AutoCompleteMode = AutoCompleteMode.Suggest;
+            CboLocalModels.AutoCompleteSource = AutoCompleteSource.ListItems;
+            CboLocalModels.FormattingEnabled = true;
+            CboLocalModels.Location = new Point(85, 11);
+            CboLocalModels.Name = "CboLocalModels";
+            CboLocalModels.Size = new Size(664, 33);
+            CboLocalModels.TabIndex = 11;
+            CboLocalModels.SelectedIndexChanged += CboLocalModels_SelectedIndexChanged;
+            // 
+            // BtnPbiDesktop
+            // 
+            BtnPbiDesktop.FlatStyle = FlatStyle.System;
+            BtnPbiDesktop.Font = new Font("Calibri", 14F, FontStyle.Regular, GraphicsUnit.Point);
+            BtnPbiDesktop.Location = new Point(755, 11);
+            BtnPbiDesktop.Name = "BtnPbiDesktop";
+            BtnPbiDesktop.Size = new Size(51, 34);
+            BtnPbiDesktop.TabIndex = 10;
+            BtnPbiDesktop.Text = "⟳";
+            BtnPbiDesktop.UseVisualStyleBackColor = true;
+            BtnPbiDesktop.Click += BtnRefreshLocalInstancesList_Click;
+            // 
+            // BtnValidateSelection
+            // 
+            BtnValidateSelection.Location = new Point(445, 94);
+            BtnValidateSelection.Name = "BtnValidateSelection";
+            BtnValidateSelection.Size = new Size(180, 34);
+            BtnValidateSelection.TabIndex = 8;
+            BtnValidateSelection.Text = "Validate Selection";
+            BtnValidateSelection.UseVisualStyleBackColor = true;
+            BtnValidateSelection.Click += BtnValidateSelection_Click;
             // 
             // BtnPathSelection
             // 
-            BtnPathSelection.Location = new Point(275, 46);
+            BtnPathSelection.Location = new Point(275, 94);
             BtnPathSelection.Name = "BtnPathSelection";
             BtnPathSelection.Size = new Size(148, 34);
             BtnPathSelection.TabIndex = 7;
@@ -88,7 +123,7 @@
             // 
             // BtnRelationships
             // 
-            BtnRelationships.Location = new Point(975, 46);
+            BtnRelationships.Location = new Point(976, 89);
             BtnRelationships.Name = "BtnRelationships";
             BtnRelationships.Size = new Size(130, 34);
             BtnRelationships.TabIndex = 6;
@@ -98,7 +133,7 @@
             // 
             // BtnGroups
             // 
-            BtnGroups.Location = new Point(641, 46);
+            BtnGroups.Location = new Point(641, 94);
             BtnGroups.Name = "BtnGroups";
             BtnGroups.Size = new Size(130, 34);
             BtnGroups.TabIndex = 5;
@@ -108,7 +143,7 @@
             // 
             // buttonPaths
             // 
-            buttonPaths.Location = new Point(144, 46);
+            buttonPaths.Location = new Point(144, 94);
             buttonPaths.Name = "buttonPaths";
             buttonPaths.Size = new Size(112, 34);
             buttonPaths.TabIndex = 4;
@@ -118,7 +153,7 @@
             // 
             // buttonDump
             // 
-            buttonDump.Location = new Point(12, 46);
+            buttonDump.Location = new Point(12, 94);
             buttonDump.Name = "buttonDump";
             buttonDump.Size = new Size(112, 34);
             buttonDump.TabIndex = 3;
@@ -126,32 +161,24 @@
             buttonDump.UseVisualStyleBackColor = true;
             buttonDump.Click += BtnDump_Click;
             // 
-            // textFilename
-            // 
-            textFilename.Location = new Point(93, 9);
-            textFilename.Name = "textFilename";
-            textFilename.Size = new Size(570, 31);
-            textFilename.TabIndex = 2;
-            textFilename.Text = "c:\\temp\\relationships-ambiguity-3.bim";
-            // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Location = new Point(12, 12);
             label1.Name = "label1";
-            label1.Size = new Size(75, 25);
+            label1.Size = new Size(67, 25);
             label1.TabIndex = 1;
-            label1.Text = "BIM file:";
+            label1.Text = "Model:";
             // 
-            // btnLoadFilename
+            // BtnLoadFilename
             // 
-            btnLoadFilename.Location = new Point(669, 7);
-            btnLoadFilename.Name = "btnLoadFilename";
-            btnLoadFilename.Size = new Size(112, 34);
-            btnLoadFilename.TabIndex = 0;
-            btnLoadFilename.Text = "Browse...";
-            btnLoadFilename.UseVisualStyleBackColor = true;
-            btnLoadFilename.Click += BtnBrowse;
+            BtnLoadFilename.Location = new Point(812, 12);
+            BtnLoadFilename.Name = "BtnLoadFilename";
+            BtnLoadFilename.Size = new Size(157, 34);
+            BtnLoadFilename.TabIndex = 0;
+            BtnLoadFilename.Text = "Browse BIM...";
+            BtnLoadFilename.UseVisualStyleBackColor = true;
+            BtnLoadFilename.Click += BtnBrowse;
             // 
             // openFile
             // 
@@ -160,7 +187,7 @@
             // splitContainer1
             // 
             splitContainer1.Dock = DockStyle.Fill;
-            splitContainer1.Location = new Point(0, 96);
+            splitContainer1.Location = new Point(0, 138);
             splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -171,7 +198,7 @@
             // 
             splitContainer1.Panel2.Controls.Add(textRelationships);
             splitContainer1.Panel2.Controls.Add(panel2);
-            splitContainer1.Size = new Size(1551, 753);
+            splitContainer1.Size = new Size(1551, 711);
             splitContainer1.SplitterDistance = 971;
             splitContainer1.TabIndex = 3;
             // 
@@ -189,8 +216,8 @@
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(logDisplay);
-            splitContainer2.Size = new Size(971, 753);
-            splitContainer2.SplitterDistance = 363;
+            splitContainer2.Size = new Size(971, 711);
+            splitContainer2.SplitterDistance = 342;
             splitContainer2.TabIndex = 4;
             // 
             // textResult
@@ -199,7 +226,7 @@
             textResult.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
             textResult.Location = new Point(0, 0);
             textResult.Name = "textResult";
-            textResult.Size = new Size(971, 363);
+            textResult.Size = new Size(971, 342);
             textResult.TabIndex = 0;
             textResult.Text = "";
             // 
@@ -209,7 +236,7 @@
             logDisplay.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
             logDisplay.Location = new Point(0, 0);
             logDisplay.Name = "logDisplay";
-            logDisplay.Size = new Size(971, 386);
+            logDisplay.Size = new Size(971, 365);
             logDisplay.TabIndex = 4;
             logDisplay.Text = "";
             // 
@@ -220,7 +247,7 @@
             textRelationships.ForeColor = Color.DarkBlue;
             textRelationships.Location = new Point(0, 47);
             textRelationships.Name = "textRelationships";
-            textRelationships.Size = new Size(576, 706);
+            textRelationships.Size = new Size(576, 664);
             textRelationships.TabIndex = 2;
             textRelationships.Text = "1,USERELATIONSHIP,B2[Name],B1[Name]\n";
             // 
@@ -254,16 +281,6 @@
             label2.Text = "Relationships Settings";
             label2.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // BtnValidateSelection
-            // 
-            BtnValidateSelection.Location = new Point(445, 46);
-            BtnValidateSelection.Name = "BtnValidateSelection";
-            BtnValidateSelection.Size = new Size(180, 34);
-            BtnValidateSelection.TabIndex = 8;
-            BtnValidateSelection.Text = "Validate Selection";
-            BtnValidateSelection.UseVisualStyleBackColor = true;
-            BtnValidateSelection.Click += BtnValidateSelection_Click;
-            // 
             // Studio
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -293,8 +310,7 @@
         #endregion
 
         private Panel panel1;
-        private Button btnLoadFilename;
-        private TextBox textFilename;
+        private Button BtnLoadFilename;
         private Label label1;
         private OpenFileDialog openFile;
         private Button buttonDump;
@@ -311,5 +327,7 @@
         private RichTextBox textResult;
         private Button BtnPathSelection;
         private Button BtnValidateSelection;
+        private Button BtnPbiDesktop;
+        private ComboBox CboLocalModels;
     }
 }
