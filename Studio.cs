@@ -291,21 +291,31 @@ namespace RelationshipsStudio
                 dumpResult += $"{{bold}}{{maroon}}*** RELATIONSHIP GROUP {groupName} ***{{reset}}";
                 var relationshipModifiers = ParseRelationshipModifiers(lines).ToList();
 
+                int totalPaths = 0, checkedPaths = 0, validPaths = 0, pathsNotActive = 0;
                 foreach (var p2p in StudioModel.Ambiguities)
                 {
+                    totalPaths++;
                     string groupResult = $"//\r\n// PATH {p2p.Key.FromTable.Name} -> {p2p.Key.ToTable.Name}\r\n//\r\n";
 
                     var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where(p => p.Active);
-                    var currentPaths =
+                    var currentPaths = 
                         from path in disambiguatedPath
                         where path.Current
                         select path;
-                    if (!currentPaths.Any()) dumpResult += " {bold}{!lightblue} NO PATHS {reset}\r\n";
-                    if (currentPaths.Count() != 1) continue;
 
-                    if (ValidatePath(currentPaths.Single(), connection, out string validateQueries, relationshipModifiers))
+                    checkedPaths += currentPaths.Count();
+                    if (!currentPaths.Any())
                     {
-                        dumpResult += " {bold}{!lightgreen} PASS {reset}\r\n";
+                        pathsNotActive++;
+                    }
+                    else if (currentPaths.Count() > 1)
+                    {
+                        dumpResult += " {bold}{!yellow} AMBIGUOUS PATHS {reset}\r\n";
+                        dumpResult += string.Concat(currentPaths.Select(p => $"{{bold}}{DumpPath(p, true)}{{reset}}\r\n"));
+                    }
+                    else if (ValidatePath(currentPaths.Single(), connection, out string validateQueries, relationshipModifiers))
+                    {
+                        validPaths++;
                     }
                     else
                     {
@@ -313,6 +323,10 @@ namespace RelationshipsStudio
                         dumpResult += groupResult + validateQueries;
                     }
                 }
+                if (validPaths == checkedPaths && checkedPaths > 0) dumpResult += " {bold}{!lightgreen} PASS {reset}\r\n";
+                else if (validPaths == 0) dumpResult += " {bold}{!lightblue} NO PATHS {reset}\r\n";
+                else dumpResult += "\r\n";
+
             }
             return dumpResult;
         }
@@ -432,13 +446,12 @@ namespace RelationshipsStudio
                 // Intercept new group
                 if (line.StartsWith("#"))
                 {
-                    groupName = line[1..];
-
                     if (currentGroup.Count > 0)
                     {
                         yield return (currentGroup, groupName);
                         currentGroup = new List<string>();
                     }
+                    groupName = line[1..];
                 }
                 else
                 {
