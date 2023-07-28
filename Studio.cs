@@ -1,4 +1,4 @@
-using Serilog;
+﻿using Serilog;
 using Serilog.Sinks.RichTextBoxForms.Themes;
 using System.Xml.Xsl;
 using Microsoft.AnalysisServices.Tabular;
@@ -60,28 +60,7 @@ namespace RelationshipsStudio
                 Log.Error("Tabular model not available.");
                 return;
             }
-            StudioModel = new Model();
-            foreach (var t in TabularDatabase.Model.Tables)
-            {
-                StudioModel.Tables.Add(new Table(t.Name, StudioModel));
-            }
-            foreach (SingleColumnRelationship r in TabularDatabase.Model.Relationships.Cast<SingleColumnRelationship>())
-            {
-                var fromTable = StudioModel.Tables.Find(t => t.Name == r.FromTable.Name);
-                var toTable = StudioModel.Tables.Find(t => t.Name == r.ToTable.Name);
-                Debug.Assert(fromTable != null);
-                Debug.Assert(toTable != null);
-                var studioRel = new Relationship(fromTable, r.FromCardinality.ConvertCardinality(), r.FromColumn.Name, toTable, r.ToCardinality.ConvertCardinality(), r.ToColumn.Name, r.IsActive)
-                {
-                    OriginalDirection = r.CrossFilteringBehavior switch
-                    {
-                        CrossFilteringBehavior.OneDirection => Relationship.CrossFilterDirection.OneWay,
-                        CrossFilteringBehavior.BothDirections => Relationship.CrossFilterDirection.Both,
-                        _ => Relationship.CrossFilterDirection.None,
-                    }
-                };
-                StudioModel.Relationships.Add(studioRel);
-            }
+            StudioModel = Model.GetModel(TabularDatabase);
         }
 
         private void DumpRelatioships()
@@ -134,11 +113,7 @@ namespace RelationshipsStudio
             {
                 var destTable = r.GetDestTable(sourceTable);
                 var destColumn = r.GetColumn(destTable);
-                dumpResult += $" {
-                    Relationship.GetSymbol(r.GetCardinality(sourceTable))}-{
-                    Relationship.GetSymbol(r.CrossFilter,r.InvertSourceDest(destTable))}-{
-                    Relationship.GetSymbol(r.GetCardinality(destTable))} {
-                    destTable.Name}[{destColumn}]";
+                dumpResult += $" {Relationship.GetSymbol(r.GetCardinality(sourceTable))}-{Relationship.GetSymbol(r.CrossFilter, r.InvertSourceDest(destTable))}-{Relationship.GetSymbol(r.GetCardinality(destTable))} {destTable.Name}[{destColumn}]";
                 sourceTable = destTable;
             }
             if (showState)
@@ -245,7 +220,7 @@ namespace RelationshipsStudio
 {StudioModel.DaxValidatePath(path, useRelationships)}
 
 // SIMULATE PATH
-// {DumpPath(path,false)}
+// {DumpPath(path, false)}
 {StudioModel.DaxSimulatePath(path, useRelationships)}";
 
             try
@@ -268,9 +243,9 @@ namespace RelationshipsStudio
                     $"{(validationResult ? "Validated" : "Different content found in")} path {path.From.Name} --> {path.To.Name}"
                 );
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Log.Error(ex.ToString() );
+                Log.Error(ex.ToString());
                 Log.Error($"Failed query:\r\n{validateQueries}");
                 validationResult = false;
             }
@@ -305,7 +280,7 @@ namespace RelationshipsStudio
                     string groupResult = $"//\r\n// {pathDescription}\r\n//\r\n";
 
                     var disambiguatedPath = (p2p).Disambiguate(relationshipModifiers).Where(p => p.Active);
-                    var currentPaths = 
+                    var currentPaths =
                         from path in disambiguatedPath
                         where path.Current
                         select path;
@@ -630,5 +605,32 @@ namespace RelationshipsStudio
             }
         }
 
+        private void BtnHelp_Click(object sender, EventArgs e)
+        {
+            WriteHelp();
+        }
+
+        private void WriteHelp(bool append=false)
+        {
+            textResult.WriteRichText(@"{bold}{blue}Welcome to Relationship Studio!{reset}
+
+When you select a PBIX active model, you can analyze the relationships and {blue}validate{reset} the execution with DAX queries.
+When you select a BIM file, you can only execute a static analysis without validation.
+
+{bold}Model{reset} Select an open PBIX model using the combo, or display the name of a BIM file open.
+{bold}⟳{reset} Refresh the list of PBIX models available (static analysis and validation).
+{bold}Browse BIM...{reset} Opens a BIM file (static analysis, no validation).
+{bold}Dump{reset} List tables and relationships in the modell. Automatically executed when you open a file. 
+{bold}Paths{reset} List all the paths found between all the tables using the model only. It does not apply any modifier (USERELATIONSHIP / CROSSFILTER).
+{bold}Path Selection{reset} For each relationship group specified in the modifiers, show all the paths grouped by endpoint; for each group, it highlights the selected path and the active paths found. If there are more active paths, even thought the selection found a path, a best practice would be that of explicitly disable the other active paths. In case of ambiguous paths, the paths that are in an ambiguous state are highlighted.
+{bold}{blue}Validate Selection{reset} For each selected path, test the filter propagation by using the model and by using a simulation in DAX disabling all the relationship. If there are discreapancies, the two DAX queries used to run the test are displayed for further analysis.
+{bold}Ambiguities{reset} Similar to Path Selection, it only shows the relationship groups where there are detected ambiguities or where there are multiple active paths even though only one is selected.
+{bold}Relationships{reset} For each relationship group specified in the modifiers, show the relationships that are active after applying the modifiers.
+
+{bold}Relationship Settings{reset} List of relationship modifiers (USERELATIONSHIP and CROSSFILTER) using a syntax that can simulate the level of application as there were nested CALCULATE/CALCULATETABLE functions.
+{bold}Syntax example{reset} Append an example of the syntax that is supported for the relationship modifiers at the end of the existing text (to not clear important data!).
+", append);
+
+        }
     }
 }

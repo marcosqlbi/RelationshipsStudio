@@ -10,6 +10,9 @@ using System.Diagnostics;
 
 namespace RelationshipsStudio
 {
+    /// <summary>
+    /// Lightweight representation of a Table in a Tabular model
+    /// </summary>
     public class Table
     {
         public string Name { get; set; }

@@ -20,6 +20,12 @@ namespace RelationshipsStudio
         Type6_Other
     }
 
+    /// <summary>
+    /// Defines a path between two table in the model
+    /// The path is described with an ordered sequence of relationships
+    /// The first relationship has a source table that matches Path.From,
+    /// the last relationship has a destination table that matches Path.To
+    /// </summary>
     public class Path : IEquatable<Path>, ICloneable
     {
         public Table From { get; }
@@ -113,6 +119,16 @@ namespace RelationshipsStudio
     }
 
     public static class PathTools {
+        /// <summary>
+        /// Disambiguate paths that have the same From / To endpoints
+        /// Implements the algorithm described by Microsoft 
+        /// https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-relationships-understand#weight
+        /// Comments describe variations from the algorithm or specific corner cases not covered
+        /// trying to match the behavior of the actual engine
+        /// </summary>
+        /// <param name="paths">Paths to disambiguate - must have the same From / To endpoints</param>
+        /// <param name="useRelationships">Relationship modifiers to apply to the relationships in the paths</param>
+        /// <returns>Cloned paths disambiguated by applying new Active, Priority, and Weight properties</returns>
         static public IEnumerable<Path> Disambiguate(this IEnumerable<Path> paths, IEnumerable<RelationshipModifier>? useRelationships = null)
         {
             // Validate paths have the same endpoint

@@ -48,6 +48,7 @@
             panel2 = new Panel();
             btnAddSyntaxExample = new Button();
             label2 = new Label();
+            BtnHelp = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -62,6 +63,7 @@
             // 
             // panel1
             // 
+            panel1.Controls.Add(BtnHelp);
             panel1.Controls.Add(CboLocalModels);
             panel1.Controls.Add(BtnPbiDesktop);
             panel1.Controls.Add(BtnValidateSelection);
@@ -75,7 +77,7 @@
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1551, 138);
+            panel1.Size = new Size(1551, 110);
             panel1.TabIndex = 1;
             // 
             // CboLocalModels
@@ -103,7 +105,7 @@
             // 
             // BtnValidateSelection
             // 
-            BtnValidateSelection.Location = new Point(445, 94);
+            BtnValidateSelection.Location = new Point(445, 60);
             BtnValidateSelection.Name = "BtnValidateSelection";
             BtnValidateSelection.Size = new Size(180, 34);
             BtnValidateSelection.TabIndex = 8;
@@ -113,7 +115,7 @@
             // 
             // BtnPathSelection
             // 
-            BtnPathSelection.Location = new Point(275, 94);
+            BtnPathSelection.Location = new Point(275, 60);
             BtnPathSelection.Name = "BtnPathSelection";
             BtnPathSelection.Size = new Size(148, 34);
             BtnPathSelection.TabIndex = 7;
@@ -123,7 +125,7 @@
             // 
             // BtnRelationships
             // 
-            BtnRelationships.Location = new Point(976, 89);
+            BtnRelationships.Location = new Point(976, 55);
             BtnRelationships.Name = "BtnRelationships";
             BtnRelationships.Size = new Size(130, 34);
             BtnRelationships.TabIndex = 6;
@@ -133,7 +135,7 @@
             // 
             // BtnGroups
             // 
-            BtnGroups.Location = new Point(641, 94);
+            BtnGroups.Location = new Point(641, 60);
             BtnGroups.Name = "BtnGroups";
             BtnGroups.Size = new Size(130, 34);
             BtnGroups.TabIndex = 5;
@@ -143,7 +145,7 @@
             // 
             // buttonPaths
             // 
-            buttonPaths.Location = new Point(144, 94);
+            buttonPaths.Location = new Point(144, 60);
             buttonPaths.Name = "buttonPaths";
             buttonPaths.Size = new Size(112, 34);
             buttonPaths.TabIndex = 4;
@@ -153,7 +155,7 @@
             // 
             // buttonDump
             // 
-            buttonDump.Location = new Point(12, 94);
+            buttonDump.Location = new Point(12, 60);
             buttonDump.Name = "buttonDump";
             buttonDump.Size = new Size(112, 34);
             buttonDump.TabIndex = 3;
@@ -187,7 +189,7 @@
             // splitContainer1
             // 
             splitContainer1.Dock = DockStyle.Fill;
-            splitContainer1.Location = new Point(0, 138);
+            splitContainer1.Location = new Point(0, 110);
             splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -198,7 +200,7 @@
             // 
             splitContainer1.Panel2.Controls.Add(textRelationships);
             splitContainer1.Panel2.Controls.Add(panel2);
-            splitContainer1.Size = new Size(1551, 711);
+            splitContainer1.Size = new Size(1551, 739);
             splitContainer1.SplitterDistance = 971;
             splitContainer1.TabIndex = 3;
             // 
@@ -216,8 +218,8 @@
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(logDisplay);
-            splitContainer2.Size = new Size(971, 711);
-            splitContainer2.SplitterDistance = 342;
+            splitContainer2.Size = new Size(971, 739);
+            splitContainer2.SplitterDistance = 355;
             splitContainer2.TabIndex = 4;
             // 
             // textResult
@@ -226,7 +228,7 @@
             textResult.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
             textResult.Location = new Point(0, 0);
             textResult.Name = "textResult";
-            textResult.Size = new Size(971, 342);
+            textResult.Size = new Size(971, 355);
             textResult.TabIndex = 0;
             textResult.Text = "";
             // 
@@ -236,7 +238,7 @@
             logDisplay.Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
             logDisplay.Location = new Point(0, 0);
             logDisplay.Name = "logDisplay";
-            logDisplay.Size = new Size(971, 365);
+            logDisplay.Size = new Size(971, 380);
             logDisplay.TabIndex = 4;
             logDisplay.Text = "";
             // 
@@ -247,7 +249,7 @@
             textRelationships.ForeColor = Color.DarkBlue;
             textRelationships.Location = new Point(0, 47);
             textRelationships.Name = "textRelationships";
-            textRelationships.Size = new Size(576, 664);
+            textRelationships.Size = new Size(576, 692);
             textRelationships.TabIndex = 2;
             textRelationships.Text = "1,USERELATIONSHIP,B2[Name],B1[Name]\n";
             // 
@@ -280,6 +282,16 @@
             label2.TabIndex = 1;
             label2.Text = "Relationships Settings";
             label2.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // BtnHelp
+            // 
+            BtnHelp.Location = new Point(987, 13);
+            BtnHelp.Name = "BtnHelp";
+            BtnHelp.Size = new Size(112, 34);
+            BtnHelp.TabIndex = 12;
+            BtnHelp.Text = "Help";
+            BtnHelp.UseVisualStyleBackColor = true;
+            BtnHelp.Click += BtnHelp_Click;
             // 
             // Studio
             // 
@@ -329,5 +341,6 @@
         private Button BtnValidateSelection;
         private Button BtnPbiDesktop;
         private ComboBox CboLocalModels;
+        private Button BtnHelp;
     }
 }

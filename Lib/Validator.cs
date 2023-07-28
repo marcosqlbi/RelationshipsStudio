@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace RelationshipsStudio
 {
+    /// <summary>
+    /// Function tools to validate the execution of a path by using 
+    /// the relationship in the model (DaxValidatePath) and the simulation 
+    /// of the propagation without any relationship (DaxSimulatePath)
+    /// </summary>
     public static class Validator
     {
         private static string TableReference(string table)

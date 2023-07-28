@@ -12,8 +12,15 @@ using System.CodeDom;
 
 namespace RelationshipsStudio
 {
+    /// <summary>
+    /// Map a relationship in the model, applying changes based on the filter context
+    /// Supports CROSSFILTER and USERELATIONSHIP modifiers
+    /// </summary>
     public class Relationship
     {
+        /// <summary>
+        /// Filter propagation using From - To
+        /// </summary>
         public enum PropagationType
         {
             None,
@@ -25,9 +32,21 @@ namespace RelationshipsStudio
 
         public enum CrossFilterDirection
         {
+            /// <summary>
+            /// No filter propagation
+            /// </summary>
             None,
+            /// <summary>
+            /// Bidirectional filter propagation
+            /// </summary>
             Both,
+            /// <summary>
+            /// Filters propagate from To to From table
+            /// </summary>
             OneWay,
+            /// <summary>
+            /// Filters propagate from From to To table
+            /// </summary>
             OneWay_Inverted
         };
 
@@ -82,12 +101,51 @@ namespace RelationshipsStudio
                 _ => PropagationType.None,
             };
         }
+
+        /// <summary>
+        /// Table that "starts" the relationship.
+        /// In a regular one-to-many relationship with single crossfilter,
+        /// the From table is on the many side
+        /// </summary>
         public Table From { get; }
+        /// <summary>
+        /// Column name that "starts" the relationship.
+        /// In a regular one-to-many relationship with single crossfilter,
+        /// the From column is on the many side
+        /// </summary>
+
         public string FromColumn { get; }
+        /// <summary>
+        /// Cardinality on the From side
+        /// </summary>
+
         public Cardinality FromCardinality { get; }
+        /// <summary>
+        /// Table that "ends" the relationship.
+        /// In a regular one-to-many relationship with single crossfilter,
+        /// the To table is on the one side
+        /// </summary>
+
         public Table To { get; }
+        /// <summary>
+        /// Column name that "ends" the relationship.
+        /// In a regular one-to-many relationship with single crossfilter,
+        /// the To table is on the one side
+        /// </summary>
+
         public string ToColumn { get; }
+        /// <summary>
+        /// Cardinality on the To side
+        /// </summary>
+
         public Cardinality ToCardinality { get; }
+
+        /// <summary>
+        /// True if the relationship is in an active state:
+        ///     - USERELATIONSHIP activated the relationship OR it is active in the model
+        ///     AND
+        ///     - Crossfilter IS NOT set to None
+        /// </summary>
         public bool Active
         {
             get
@@ -99,6 +157,7 @@ namespace RelationshipsStudio
                 Weight = value ? 0 : -1;
             }
         }
+
         /// <summary>
         /// Weight is -1 for inactive relationships and 0 for active relationships
         /// Weight can be dynamically modified by USERELATIONSHIP starting by 1 if 
@@ -111,7 +170,9 @@ namespace RelationshipsStudio
 
         private CrossFilterDirection _originalDirection = CrossFilterDirection.OneWay;
         /// <summary>
-        /// Model direction that cannot be modified - it is the value 
+        /// Model direction that cannot be modified
+        /// It is the original crossfilter in the model
+        /// and it is not impacted by CROSSFILTER
         /// </summary>
         public CrossFilterDirection OriginalDirection
         {
@@ -122,11 +183,13 @@ namespace RelationshipsStudio
                 CrossFilter = _originalDirection;
             }
         }
+
         /// <summary>
-        /// Filter direction that can be modified by CROSSFILTER
+        /// Current filter direction that can be modified by CROSSFILTER
         /// </summary>
         public CrossFilterDirection CrossFilter { get; set; } = CrossFilterDirection.OneWay;
         // TODO replace RelationshipEndCardinality with a local Cardinality enum
+
         public Relationship(Table from, Cardinality fromCardinality, string fromColumn, Table to, Cardinality toCardinality, string toColumn, bool active)
         {
             From = from;
@@ -137,27 +200,74 @@ namespace RelationshipsStudio
             ToColumn = toColumn;
             Active = active;
         }
+        
+        /// <summary>
+        /// True if the argument is the From table
+        /// False if the argument is the To table
+        /// </summary>
+        /// <param name="sourceTable"></param>
+        /// <returns></returns>
         internal bool InvertSourceDest(Table sourceTable)
         {
             bool? result = (sourceTable == this.From) ? true : (sourceTable == this.To) ? false : null;
             Debug.Assert(result.HasValue, "Invalid source table");
             return result.Value;
         }
+
+        /// <summary>
+        /// Cardinality of the table provided
+        /// </summary>
+        /// <param name="table">Must be either From or To table</param>
+        /// <returns></returns>
         public Cardinality GetCardinality(Table table)
             => InvertSourceDest(table) ? this.FromCardinality : this.ToCardinality;
 
+        /// <summary>
+        /// When the relationship crossfilter is single direction, 
+        /// returns the cardinality of the source side of the filter propagation
+        /// (e.g. the To table for a regular one-to-many relationship)
+        /// </summary>
+        /// <param name="table">Must be either From or To table</param>
+        /// <returns></returns>
         public Cardinality GetSourceCardinality(Table sourceTable)
             => InvertSourceDest(sourceTable) ? this.FromCardinality : this.ToCardinality;
 
+        /// <summary>
+        /// When the relationship crossfilter is single direction, 
+        /// returns the column name of the source side of the filter propagation
+        /// (e.g. it is the column of the To table for a regular one-to-many relationship)
+        /// </summary>
+        /// <param name="table">Must be either From or To table</param>
+        /// <returns></returns>
         public string GetSourceColumn(Table sourceTable)
             => InvertSourceDest(sourceTable) ? this.FromColumn : this.ToColumn;
 
+        /// <summary>
+        /// When the relationship crossfilter is single direction, 
+        /// returns the cardinality of the destination side of the filter propagation
+        /// (e.g. the From table for a regular one-to-many relationship)
+        /// </summary>
+        /// <param name="table">Must be either From or To table</param>
+        /// <returns></returns>
         public Cardinality GetDestCardinality(Table sourceTable)
             => InvertSourceDest(sourceTable) ? this.ToCardinality : this.FromCardinality;
 
+        /// <summary>
+        /// When the relationship crossfilter is single direction, 
+        /// returns the column name of the destination side of the filter propagation
+        /// (e.g. it is the column of the From table for a regular one-to-many relationship)
+        /// </summary>
+        /// <param name="table">Must be either From or To table</param>
+        /// <returns></returns>
         public string GetDestColumn(Table sourceTable)
             => InvertSourceDest(sourceTable) ? this.ToColumn : this.FromColumn;
 
+        /// <summary>
+        /// Return From if To is provided, otherwise it returns To if From is provided.
+        /// Throws an exception if the argument is netiher From nor To
+        /// </summary>
+        /// <param name="sourceTable">Table from which the filter propagation starts; must be either From or To</param>
+        /// <returns>The destination of the crossfilter by providing the source table</returns>
         public Table GetDestTable(Table sourceTable)
         {
             Table destTable = InvertSourceDest(sourceTable) ? this.To : this.From;
@@ -165,15 +275,30 @@ namespace RelationshipsStudio
             {
                 string errorMessage = $"Table {destTable.Name} is not a destination of filter propagation";
                 Log.Error(errorMessage);
+                // TODO: customize exception
                 throw new Exception(errorMessage);
             }
             return destTable;
         }
+
+        /// <summary>
+        /// Get the column name of the relationship on the specified side.
+        /// </summary>
+        /// <param name="sourceTable">Must be either From or To</param>
+        /// <returns>Column name</returns>
         public string GetColumn(Table sourceTable)
         {
             string columnName = InvertSourceDest(sourceTable) ? this.FromColumn : this.ToColumn;
             return columnName;
         }
+
+        /// <summary>
+        /// Check whether the table is the destination side of the relationship
+        /// It consider the currently active crossfilter direction to establish 
+        /// whether From and To are source/destination of the crossfilter
+        /// </summary>
+        /// <param name="table">It must be either From or To</param>
+        /// <returns>True if table is the destination, False if it is the source</returns>
         public bool IsFilterDestTable(Table table)
         {
             var crossFilter = (CrossFilter == CrossFilterDirection.None) ? OriginalDirection : CrossFilter;
@@ -193,6 +318,13 @@ namespace RelationshipsStudio
             }
         }
 
+        /// <summary>
+        /// Check whether the table is the source side of the relationship
+        /// It consider the currently active crossfilter direction to establish 
+        /// whether From and To are source/destination of the crossfilter
+        /// </summary>
+        /// <param name="table">It must be either From or To</param>
+        /// <returns>True if table is the source, False if it is the destination</returns>
         public bool IsFilterSourceTable(Table table)
         {
             var crossFilter = (CrossFilter == CrossFilterDirection.None) ? OriginalDirection : CrossFilter;
@@ -212,6 +344,13 @@ namespace RelationshipsStudio
             }
         }
 
+        /// <summary>
+        /// Clone the relationship applying the modifiers specified
+        /// It can change Active, Weight, and CrossFilter depending on the modifiers
+        /// </summary>
+        /// <param name="useRelationships">List of modifiers to apply</param>
+        /// <returns>Cloned and then modified relationship</returns>
+        /// <exception cref="Exception"></exception>
         public Relationship CloneApplyingModifiers(IEnumerable<RelationshipModifier> useRelationships)
         {
             Relationship cloned = (Relationship)this.MemberwiseClone();
