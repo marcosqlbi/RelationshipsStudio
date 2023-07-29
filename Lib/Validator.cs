@@ -66,24 +66,40 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceCo
             const string STEP_PREFIX = "__Step";
             int varStep = 0;
             Table fromTable = path.From;
+            string? previousColumnReference = null;
             var steps = path.Relationships.ApplyModifiers(useRelationships).Select(r =>
             {
                 string OneToMany()
-                    => @$"
+                {
+                    string columnTo = ColumnReference(r.To.Name, r.ToColumn);
+                    string columnFrom = ColumnReference(r.From.Name, r.FromColumn);
+                    bool showPreviousColumnreference = 
+                        previousColumnReference != null 
+                        && previousColumnReference != columnTo 
+                        && previousColumnReference != columnFrom;
+                    return @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( VALUES ( {TableReference(r.From.Name)} ), {ColumnReference(r.To.Name, r.ToColumn)}, {ColumnReference(r.From.Name, r.FromColumn)} ),
-            USERELATIONSHIP ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
-            CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, ONEWAY )
+            SUMMARIZE ( VALUES ( {TableReference(r.From.Name)} ), {(showPreviousColumnreference ? $"{previousColumnReference}, ": "")}{columnTo}, {columnFrom} ),
+            USERELATIONSHIP ( {columnFrom}, {columnTo} ),
+            CROSSFILTER ( {columnFrom}, {columnTo}, ONEWAY )
         )" + "\r\n";
+                }
 
                 string ManyToOne()
-                    => @$"
+                {
+                    string columnTo = ColumnReference(r.To.Name, r.ToColumn);
+                    string columnFrom = ColumnReference(r.From.Name, r.FromColumn);
+                    bool showPreviousColumnreference =
+                        previousColumnReference != null
+                        && previousColumnReference != columnTo
+                        && previousColumnReference != columnFrom;
+                    return @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( VALUES ( {TableReference(r.To.Name)} ), {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
-            USERELATIONSHIP ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)} ),
-            CROSSFILTER ( {ColumnReference(r.From.Name, r.FromColumn)}, {ColumnReference(r.To.Name, r.ToColumn)}, BOTH )
+            SUMMARIZE ( VALUES ( {TableReference(r.To.Name)} ), {columnFrom}, {columnTo} ),
+            USERELATIONSHIP ( {columnFrom}, {columnTo} ),
+            CROSSFILTER ( {columnFrom}, {columnTo}, BOTH )
         )" + "\r\n";
-
+                }
                 string ManyToMany()
                 {
                     string columnFrom = r.InvertSourceDest(fromTable) ? ColumnReference(r.From.Name, r.FromColumn) : ColumnReference(r.To.Name, r.ToColumn);
@@ -110,6 +126,7 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceCo
                 }
 
                 fromTable = r.GetDestTable(fromTable);
+                previousColumnReference = ColumnReference(fromTable.Name,r.GetDestColumn(fromTable));
 
                 return relationshipStep;
             });
