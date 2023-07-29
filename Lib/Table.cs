@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Microsoft.AnalysisServices;
 
 namespace RelationshipsStudio
 {
@@ -40,16 +41,22 @@ namespace RelationshipsStudio
                     continue;
                 }
                 var newPath = new Path(this,destTable,relationship);
-                Debug.Assert(!paths.Any(p => p == newPath), "Found duplicated path during GetAllSourcePaths"); 
-                paths.Add(newPath);
+                Debug.Assert(!paths.Any(p => p == newPath), "Found duplicated path during GetAllSourcePaths");
+                AddPath(newPath);
 
                 var newPaths = destTable.GetAllSourcePaths(excludeTables);
                 foreach (var path in newPaths)
                 {
-                    paths.Add(newPath + path);
+                    AddPath(newPath + path);
                 }
             }
             return paths;
+
+            void AddPath( Path pathToAdd )
+            {
+                pathToAdd.Active = pathToAdd.Relationships.All(r => r.Active);
+                paths?.Add(pathToAdd);
+            }
         }
 
         public IEnumerable<Path> SourcePaths

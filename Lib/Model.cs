@@ -65,13 +65,19 @@ namespace RelationshipsStudio
                 select p;
         }
 
+        public IEnumerable<IGrouping<(Table FromTable, Table ToTable), Path>> AllPaths
+        {
+            get => from t in Tables
+                   from p in t.SourcePaths
+                   group p by (FromTable: p.From, ToTable: p.To) into p2p
+                   select p2p;
+        }
+
         public IEnumerable<IGrouping<(Table FromTable, Table ToTable), Path>> Ambiguities 
-        { 
-            get =>  from t in Tables
-                    from p in t.SourcePaths
-                    group p by (FromTable: p.From, ToTable: p.To) into p2p
-                    where p2p.Count() > 1
-                    select p2p;
+        {
+            get => from p in AllPaths
+                   where p.Count() > 1
+                   select p;
         }
 
         public Path GetActivePath(Table fromTable, Table toTable)

@@ -252,7 +252,7 @@ namespace RelationshipsStudio
             return validationResult;
         }
 
-        private string ValidationQueries(AdomdConnection connection)
+        private string ValidationQueries(AdomdConnection connection, bool validateAll)
         {
             string dumpResult = string.Empty;
             if (StudioModel == null)
@@ -270,7 +270,7 @@ namespace RelationshipsStudio
                 var relationshipModifiers = ParseRelationshipModifiers(lines).ToList();
 
                 int totalPaths = 0, checkedPaths = 0, validPaths = 0, pathsNotActive = 0;
-                foreach (var p2p in StudioModel.Ambiguities)
+                foreach (var p2p in (validateAll ? StudioModel.AllPaths : StudioModel.Ambiguities))
                 {
                     totalPaths++;
 
@@ -578,10 +578,7 @@ namespace RelationshipsStudio
 
         private void BtnValidateSelection_Click(object sender, EventArgs e)
         {
-            textResult.WriteRichText($"{{bold}}{{ul}}Relationship modifiers{{reset}}\r\n", append: false);
-            using AdomdConnection connection = new(ModelConnectionString);
-            connection.Open();
-            textResult.WriteRichText(ValidationQueries(connection));
+            ValidatePaths(false);
         }
 
         private void BtnRefreshLocalInstancesList_Click(object sender, EventArgs e)
@@ -610,7 +607,7 @@ namespace RelationshipsStudio
             WriteHelp();
         }
 
-        private void WriteHelp(bool append=false)
+        private void WriteHelp(bool append = false)
         {
             textResult.WriteRichText(@"{bold}{blue}Welcome to Relationship Studio!{reset}
 
@@ -622,14 +619,29 @@ When you select a BIM file, you can only execute a static analysis without valid
 {bold}Browse BIM...{reset} Opens a BIM file (static analysis, no validation).
 {bold}Dump{reset} List tables and relationships in the modell. Automatically executed when you open a file. 
 {bold}Paths{reset} List all the paths found between all the tables using the model only. It does not apply any modifier (USERELATIONSHIP / CROSSFILTER).
-{bold}Path Selection{reset} For each relationship group specified in the modifiers, show all the paths grouped by endpoint; for each group, it highlights the selected path and the active paths found. If there are more active paths, even thought the selection found a path, a best practice would be that of explicitly disable the other active paths. In case of ambiguous paths, the paths that are in an ambiguous state are highlighted.
+{bold}Path Selection{reset} For each relationship group specified in the modifiers, show all the paths grouped by endpoint; for each group, it highlights the selected path and the active paths found. Only grops with more paths are considered. If there are more active paths, even thought the selection found a path, a best practice would be that of explicitly disable the other active paths. In case of ambiguous paths, the paths that are in an ambiguous state are highlighted.
 {bold}{blue}Validate Selection{reset} For each selected path, test the filter propagation by using the model and by using a simulation in DAX disabling all the relationship. If there are discreapancies, the two DAX queries used to run the test are displayed for further analysis.
 {bold}Ambiguities{reset} Similar to Path Selection, it only shows the relationship groups where there are detected ambiguities or where there are multiple active paths even though only one is selected.
+{bold}{blue}Validate All Paths{reset} For each active path, test the filter propagation by using the model and by using a simulation in DAX disabling all the relationship. If there are discreapancies, the two DAX queries used to run the test are displayed for further analysis.
 {bold}Relationships{reset} For each relationship group specified in the modifiers, show the relationships that are active after applying the modifiers.
 
 {bold}Relationship Settings{reset} List of relationship modifiers (USERELATIONSHIP and CROSSFILTER) using a syntax that can simulate the level of application as there were nested CALCULATE/CALCULATETABLE functions.
 {bold}Syntax example{reset} Append an example of the syntax that is supported for the relationship modifiers at the end of the existing text (to not clear important data!).
 ", append);
+
+        }
+
+        private void BtnValidateAll_Click(object sender, EventArgs e)
+        {
+            ValidatePaths(true);
+        }
+
+        private void ValidatePaths(bool validateAll)
+        {
+            textResult.WriteRichText($"{{bold}}{{ul}}Relationship modifiers{{reset}}\r\n", append: false);
+            using AdomdConnection connection = new(ModelConnectionString);
+            connection.Open();
+            textResult.WriteRichText(ValidationQueries(connection, validateAll));
 
         }
     }

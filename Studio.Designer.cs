@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            BtnValidateAll = new Button();
+            BtnHelp = new Button();
             CboLocalModels = new ComboBox();
             BtnPbiDesktop = new Button();
             BtnValidateSelection = new Button();
@@ -48,7 +50,6 @@
             panel2 = new Panel();
             btnAddSyntaxExample = new Button();
             label2 = new Label();
-            BtnHelp = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -63,6 +64,7 @@
             // 
             // panel1
             // 
+            panel1.Controls.Add(BtnValidateAll);
             panel1.Controls.Add(BtnHelp);
             panel1.Controls.Add(CboLocalModels);
             panel1.Controls.Add(BtnPbiDesktop);
@@ -79,6 +81,26 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1551, 110);
             panel1.TabIndex = 1;
+            // 
+            // BtnValidateAll
+            // 
+            BtnValidateAll.Location = new Point(790, 60);
+            BtnValidateAll.Name = "BtnValidateAll";
+            BtnValidateAll.Size = new Size(180, 34);
+            BtnValidateAll.TabIndex = 13;
+            BtnValidateAll.Text = "Validate All Active";
+            BtnValidateAll.UseVisualStyleBackColor = true;
+            BtnValidateAll.Click += BtnValidateAll_Click;
+            // 
+            // BtnHelp
+            // 
+            BtnHelp.Location = new Point(987, 13);
+            BtnHelp.Name = "BtnHelp";
+            BtnHelp.Size = new Size(112, 34);
+            BtnHelp.TabIndex = 12;
+            BtnHelp.Text = "Help";
+            BtnHelp.UseVisualStyleBackColor = true;
+            BtnHelp.Click += BtnHelp_Click;
             // 
             // CboLocalModels
             // 
@@ -125,7 +147,7 @@
             // 
             // BtnRelationships
             // 
-            BtnRelationships.Location = new Point(976, 55);
+            BtnRelationships.Location = new Point(987, 60);
             BtnRelationships.Name = "BtnRelationships";
             BtnRelationships.Size = new Size(130, 34);
             BtnRelationships.TabIndex = 6;
@@ -135,7 +157,7 @@
             // 
             // BtnGroups
             // 
-            BtnGroups.Location = new Point(641, 60);
+            BtnGroups.Location = new Point(642, 60);
             BtnGroups.Name = "BtnGroups";
             BtnGroups.Size = new Size(130, 34);
             BtnGroups.TabIndex = 5;
@@ -283,16 +305,6 @@
             label2.Text = "Relationships Settings";
             label2.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // BtnHelp
-            // 
-            BtnHelp.Location = new Point(987, 13);
-            BtnHelp.Name = "BtnHelp";
-            BtnHelp.Size = new Size(112, 34);
-            BtnHelp.TabIndex = 12;
-            BtnHelp.Text = "Help";
-            BtnHelp.UseVisualStyleBackColor = true;
-            BtnHelp.Click += BtnHelp_Click;
-            // 
             // Studio
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
@@ -342,5 +354,6 @@
         private Button BtnPbiDesktop;
         private ComboBox CboLocalModels;
         private Button BtnHelp;
+        private Button BtnValidateAll;
     }
 }
