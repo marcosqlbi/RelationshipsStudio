@@ -145,7 +145,9 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceCo
 
             var firstColumnReference = ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From));
             var x = steps.ToList()
-                .Append($"    VAR {STEP_PREFIX}{++varStep} =\r\n        NATURALLEFTOUTERJOIN ( {STEP_PREFIX}{varStep - 1}, {TableReference(path.To.Name)} )\r\n")
+                .Append(path.Relationships.Last().GetDestCardinality(path.To) == Relationship.Cardinality.Many
+                    ? $"    VAR {STEP_PREFIX}{++varStep} =\r\n        NATURALLEFTOUTERJOIN ( {STEP_PREFIX}{varStep - 1}, {TableReference(path.To.Name)} )\r\n"
+                    : "" )
                 .Append($"    VAR {STEP_PREFIX}{++varStep} =\r\n        NATURALLEFTOUTERJOIN ( VALUES ( {firstColumnReference} ), {STEP_PREFIX}{varStep - 1} )\r\n")
                 .Append(@$"    VAR Result=
         GROUPBY (
@@ -155,10 +157,6 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceCo
                 ? $"COUNTX ( CURRENTGROUP(), {ColumnReference(path.To.Name, path.Relationships.Last().GetSourceColumn(path.To))} )" 
                 : @"SUMX ( CURRENTGROUP(), [@Rows_Target] )")} 
         )" );
-        //    ""Result"", SUMX ( CURRENTGROUP(), {(path.Relationships.Last().GetFilterPropagation(path.To) == Relationship.PropagationType.ManyToMany 
-        //        ? $"1 * NOT ( ISBLANK ( {ColumnReference(path.To.Name, path.Relationships.Last().GetSourceColumn(path.To))} ) )" 
-        //        : @"[@Rows_Target]")} ) 
-        //)" );
             var allRelationships = model.Relationships.Select(r =>
             {
                 return @$",
