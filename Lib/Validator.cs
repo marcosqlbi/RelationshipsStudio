@@ -51,9 +51,9 @@ namespace RelationshipsStudio
 CALCULATETABLE (
     SUMMARIZECOLUMNS ( 
         {ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From))},
-        ""Result"", CALCULATE (
+        ""Result"", IGNORE ( CALCULATE (
             COUNTROWS ( VALUES ( {TableReference(path.To.Name)} ) ){string.Concat(relationships)}
-        )
+        ) )
     ){string.Concat(allRelationships)}
 )
 ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From))}
@@ -71,15 +71,21 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceCo
             {
                 string OneToMany()
                 {
+                    bool lastRelationship = path.To == r.From || path.To == r.To;
                     string columnTo = ColumnReference(r.To.Name, r.ToColumn);
                     string columnFrom = ColumnReference(r.From.Name, r.FromColumn);
+                    string tableFrom = TableReference(r.From.Name);
                     bool showPreviousColumnreference = 
                         previousColumnReference != null 
                         && previousColumnReference != columnTo 
                         && previousColumnReference != columnFrom;
                     return @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( VALUES ( {TableReference(r.From.Name)} ), {(showPreviousColumnreference ? $"{previousColumnReference}, ": "")}{columnTo}, {columnFrom} ),
+            SUMMARIZE ( 
+                VALUES ( {tableFrom} ), 
+                {(showPreviousColumnreference ? $"{previousColumnReference}, ": "")}{columnTo}, {columnFrom}{(lastRelationship?@$", 
+                ""@Rows_Target"", COUNTROWS ( VALUES ( {tableFrom} ) )":"")}
+            ),
             USERELATIONSHIP ( {columnFrom}, {columnTo} ),
             CROSSFILTER ( {columnFrom}, {columnTo}, ONEWAY )
         )" + "\r\n";
@@ -87,15 +93,21 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceCo
 
                 string ManyToOne()
                 {
+                    bool lastRelationship = path.To == r.From || path.To == r.To;
                     string columnTo = ColumnReference(r.To.Name, r.ToColumn);
                     string columnFrom = ColumnReference(r.From.Name, r.FromColumn);
+                    string tableTo = TableReference(r.To.Name);
                     bool showPreviousColumnreference =
                         previousColumnReference != null
                         && previousColumnReference != columnTo
                         && previousColumnReference != columnFrom;
                     return @$"
         CALCULATETABLE ( 
-            SUMMARIZE ( VALUES ( {TableReference(r.To.Name)} ), {columnFrom}, {columnTo} ),
+            SUMMARIZE ( 
+                VALUES ( {tableTo} ), 
+                {columnFrom}, {columnTo}{(lastRelationship ? @$", 
+                ""@Rows_Target"", COUNTROWS ( VALUES ( {tableTo} ) )" : "")}
+            ),
             USERELATIONSHIP ( {columnFrom}, {columnTo} ),
             CROSSFILTER ( {columnFrom}, {columnTo}, BOTH )
         )" + "\r\n";
@@ -131,9 +143,22 @@ ORDER BY {ColumnReference(path.From.Name, path.Relationships.First().GetSourceCo
                 return relationshipStep;
             });
 
+            var firstColumnReference = ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From));
             var x = steps.ToList()
-                .Append($"    VAR {STEP_PREFIX}{++varStep} =\r\n        NATURALLEFTOUTERJOIN ( {STEP_PREFIX}{varStep - 1}, {TableReference(path.To.Name)} )\r\n" )
-                .Append($"    VAR Result=\r\n        GROUPBY( {STEP_PREFIX}{varStep}, {ColumnReference(path.From.Name, path.Relationships.First().GetSourceColumn(path.From))}, \"Result\", COUNTX ( CURRENTGROUP(), 1 ) )" );
+                .Append($"    VAR {STEP_PREFIX}{++varStep} =\r\n        NATURALLEFTOUTERJOIN ( {STEP_PREFIX}{varStep - 1}, {TableReference(path.To.Name)} )\r\n")
+                .Append($"    VAR {STEP_PREFIX}{++varStep} =\r\n        NATURALLEFTOUTERJOIN ( VALUES ( {firstColumnReference} ), {STEP_PREFIX}{varStep - 1} )\r\n")
+                .Append(@$"    VAR Result=
+        GROUPBY (
+            {STEP_PREFIX}{varStep}, 
+            {firstColumnReference}, 
+            ""Result"", {(path.Relationships.Last().GetFilterPropagation(path.To) == Relationship.PropagationType.ManyToMany 
+                ? $"COUNTX ( CURRENTGROUP(), {ColumnReference(path.To.Name, path.Relationships.Last().GetSourceColumn(path.To))} )" 
+                : @"SUMX ( CURRENTGROUP(), [@Rows_Target] )")} 
+        )" );
+        //    ""Result"", SUMX ( CURRENTGROUP(), {(path.Relationships.Last().GetFilterPropagation(path.To) == Relationship.PropagationType.ManyToMany 
+        //        ? $"1 * NOT ( ISBLANK ( {ColumnReference(path.To.Name, path.Relationships.Last().GetSourceColumn(path.To))} ) )" 
+        //        : @"[@Rows_Target]")} ) 
+        //)" );
             var allRelationships = model.Relationships.Select(r =>
             {
                 return @$",
